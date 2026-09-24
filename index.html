@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İçişleri GYS - Gelişmiş Soru Bankası</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Üst Menü -->
+    <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-md font-bold cursor-pointer" onclick="goHome()">📚 GYS Soru Bankası</h1>
+        <div class="text-xs flex gap-2">
+            <button onclick="openGlobalFavorites()" class="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-full transition">⭐ Favoriler (<span id="favCount">0</span>)</button>
+            <button onclick="openGlobalWrongs()" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-full transition">❌ Yanlışlar (<span id="wrongCount">0</span>)</button>
+        </div>
+    </header>
+
+    <!-- Ana İçerik Alanı -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 flex flex-col justify-center">
+        
+        <!-- 1. ANA EKRAN -->
+        <div id="homeScreen" class="space-y-4 my-4">
+            <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-5 rounded-2xl shadow-md text-white text-center cursor-pointer hover:opacity-95 transition" onclick="startDenemeSinavi()">
+                <h2 class="text-xl font-bold">🎯 Genel Deneme Sınavı</h2>
+                <p class="text-xs mt-1 text-orange-100">Havuzdaki Sorularla ÖSYM Simülasyonu</p>
+            </div>
+
+            <h2 class="text-base font-bold text-slate-700 mt-4 mb-2">Ders Seçerek Çalış (21 Kalem):</h2>
+            <div id="courseList" class="space-y-2 pb-10"></div>
+        </div>
+
+        <!-- 2. DERS DETAY / MENÜ EKRANI -->
+        <div id="courseDetailScreen" class="bg-white rounded-2xl shadow-xl p-6 hidden my-4 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <button onclick="goHome()" class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600 font-medium hover:bg-slate-200">🏠 Ana Sayfa</button>
+                <h2 id="detailCourseTitle" class="text-sm font-bold text-blue-600 text-right">Ders Adı</h2>
+            </div>
+
+            <div class="space-y-3 py-2">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">Çözmek İstediğin Soru Adedini Seç:</label>
+                    <div class="flex gap-2 mb-3">
+                        <button onclick="setQuestionCount(5)" id="btnCount5" class="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-200 transition">5 Soru</button>
+                        <button onclick="setQuestionCount(10)" id="btnCount10" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">10 Soru</button>
+                        <button onclick="setQuestionCount(20)" id="btnCount20" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">20 Soru</button>
+                        <button onclick="setQuestionCount('all')" id="btnCountAll" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">Tümü</button>
+                    </div>
+                    <button onclick="startSelectedCourseQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition text-sm">▶️ Testi Başlat</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="openCourseFavorites()" class="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs font-semibold hover:bg-amber-100 transition flex items-center justify-center gap-1">
+                        ⭐ Dersin Favorileri (<span id="courseFavCount">0</span>)
+                    </button>
+                    <button onclick="openCourseWrongs()" class="p-3 bg-red-50 border border-red-200 text-red-800 rounded-xl text-xs font-semibold hover:bg-red-100 transition flex items-center justify-center gap-1">
+                        ❌ Dersin Yanlışları (<span id="courseWrongCount">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SORU ÇÖZÜM EKRANI -->
+        <div id="quizContainer" class="bg-white rounded-2xl shadow-xl p-6 relative hidden my-4">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="goHome()" class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600 font-medium hover:bg-slate-200">🏠 Çıkış</button>
+                <div class="flex items-center space-x-2">
+                    <span id="questionNumber" class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Soru 1/1</span>
+                    <button onclick="toggleFavorite()" id="favBtn" class="text-2xl text-gray-300 hover:text-yellow-500 transition">⭐</button>
+                </div>
+            </div>
+
+            <!-- Soru Metni -->
+            <h2 id="questionText" class="text-base font-medium mb-4">Soru metni yükleniyor...</h2>
+
+            <!-- Şıklar (A, B, C, D, E) -->
+            <div id="optionsContainer" class="space-y-3"></div>
+
+            <!-- Açıklama Alanı -->
+            <div id="explanationContainer" class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 hidden">
+                <span class="font-bold text-blue-600 block mb-1">💡 Açıklama:</span>
+                <p id="explanationText"></p>
+            </div>
+
+            <!-- Sonraki Soru Butonu -->
+            <button id="nextBtn" onclick="nextQuestion()" class="mt-6 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hidden hover:bg-blue-700 transition text-sm">Sonraki Soru ➡️</button>
+        </div>
+
+        <!-- 4. DETAYLI BİTİŞ / KARNE EKRANI -->
+        <div id="resultContainer" class="bg-white rounded-2xl shadow-xl p-6 text-center hidden my-4 space-y-4">
+            <h2 class="text-2xl font-bold text-blue-600">Sınav / Test Tamamlandı! 🎉</h2>
+            
+            <div class="grid grid-cols-3 gap-2 py-3">
+                <div class="bg-green-50 p-3 rounded-xl border border-green-200">
+                    <span class="block text-[11px] text-green-600 font-bold">DOĞRU</span>
+                    <span id="resTrue" class="text-lg font-bold text-green-700">0</span>
+                </div>
+                <div class="bg-red-50 p-3 rounded-xl border border-red-200">
+                    <span class="block text-[11px] text-red-600 font-bold">YANLIŞ</span>
+                    <span id="resFalse" class="text-lg font-bold text-red-700">0</span>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                    <span class="block text-[11px] text-blue-600 font-bold">BAŞARI</span>
+                    <span id="resSuccess" class="text-lg font-bold text-blue-700">%0</span>
+                </div>
+            </div>
+
+            <button onclick="goHome()" class="w-full bg-blue-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-blue-700 transition text-sm">Ana Sayfaya Dön</button>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Mantığı -->
+    <script>
+        const veriTabani = [
+            { 
+                id: "d1", 
+                dersAdi: "1. Genel Yetenek (Türkçe ve Dilbilgisi)", 
+                sinavSoruSayisi: 5, 
+                sorular: [
+                    { 
+                        id: "tr_1", 
+                        soruMetni: "Aşağıdaki cümlelerin hangisinde yazım yanlışı vardır?", 
+                        dogruCevap: "Herkez buradaydı.", 
+                        yanlisCevaplar: ["Herkes buradaydı.", "Yarın geleceğim.", "Kitabı okudum.", "Ankara'ya gittik."],
+                        aciklama: "'Herkez' kelimesi yanlış yazılmıştır, doğrusu 'Herkes' olmalıdır." 
+                    },
+                    { 
+                        id: "tr_2", 
+                        soruMetni: "Aşağıdaki sözcüklerden hangisinin yazımı yanlıştır?", 
+                        dogruCevap: "Yanlış", 
+                        yanlisCevaplar: ["Kılavuz", "Pahçu", "Herhangi", "Birkaç"],
+                        aciklama: "'Yanlış' sözcüğü l ve n harflerinin yer değişmesiyle karıştırılır." 
+                    }
+                ] 
+            },
+            { id: "d2", dersAdi: "2. Genel Yetenek (Sayısal Mantık)", sinavSoruSayisi: 5, sorular: [] },
+            { id: "d3", dersAdi: "3. Atatürk İlkeleri ve İnkılap Tarihi", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d4", dersAdi: "4. T.C. Anayasası", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d5", dersAdi: "5. Klasikleşmiş Edebi Eserler ve Yazarları", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d6", dersAdi: "6. Yakın Türkiye Siyasi Tarihi", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d7", dersAdi: "7. Türkiye Coğrafyası", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d8", dersAdi: "8. 657 sayılı Devlet Memurları Kanunu", sinavSoruSayisi: 8, sorular: [] },
+            { id: "d9", dersAdi: "9. 1 sayılı Cumhurbaşkanlığı Kararnamesi (9. Bölüm)", sinavSoruSayisi: 3, sorular: [] },
+            { id: "d10", dersAdi: "10. İçişleri Md. Personeli G.Y. ve U.D. Yönetmeliği", sinavSoruSayisi: 8, sorular: [] },
+            { id: "d11", dersAdi: "11. İçişleri Md. Personeli Atama ve Yer Değiştirme Yön.", sinavSoruSayisi: 5, sorular: [] },
+            { id: "d12", dersAdi: "12. 4982 sayılı Bilgi Edinme Hakkı Kanunu", sinavSoruSayisi: 4, sorular: [] },
+            { 
+                id: "d13", 
+                dersAdi: "13. 3071 sayılı Dilekçe Hakkının Kullanılması Kanunu", 
+                sinavSoruSayisi: 3, 
+                sorular: [
+                    {
+                        id: "dilekce_1",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türk vatandaşlarının ve Türkiye'de ikamet eden yabancıların kendileriyle veya kamu ile ilgili dilek ve şikâyetleri hakkında, Türkiye Büyük Millet Meclisine ve yetkili makamlara yazı ile başvurma haklarının kullanılma biçimini düzenlemek hükmü aşağıdaki seçeneklerden hangisi ile ilgilidir?",
+                        dogruCevap: "Amaç",
+                        yanlisCevaplar: ["Özel Şartlar", "Dilekçede Bulunması Gereken Zorunlu Şartlar", "Kapsam", "Dilekçe hakkı"],
+                        aciklama: "Kanunun 1. maddesi (Amaç) başlığı altında bu husus düzenlenmiştir."
+                    },
+                    {
+                        id: "dilekce_2",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'un amacı nedir?",
+                        dogruCevap: "Dilekçe hakkının kullanılma biçimini düzenlemek",
+                        yanlisCevaplar: ["Kamu hizmetlerinin kalitesini artırmak", "Yargı sürecini hızlandırmak", "Yabancıların seçme hakkını düzenlemek", "Türk vatandaşlarının sosyal haklarını belirlemek"],
+                        aciklama: "Kanunun amacı, Türk vatandaşları ve Türkiye'de ikamet eden yabancıların başvuru biçimini düzenlemektir."
+                    },
+                    {
+                        id: "dilekce_3",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçe hakkı hangi makamlara başvurarak kullanılabilir?",
+                        dogruCevap: "Türkiye Büyük Millet Meclisine ve yetkili makamlara",
+                        yanlisCevaplar: ["Yerel yöneticilere", "Sivil toplum kuruluşlarına", "Yargı organlarına", "Yabancı konsolosluklara"],
+                        aciklama: "Başvurular TBMM'ye ve yetkili idari makamlara yapılır."
+                    },
+                    {
+                        id: "dilekce_4",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, bu kanun hangi tür başvuruları düzenler?",
+                        dogruCevap: "Dilek ve şikâyet başvurularını",
+                        yanlisCevaplar: ["Yalnızca resmi belgelerle yapılan başvuruları", "Yalnızca öneri başvurularını", "Yalnızca olumlu başvurular", "Yalnızca kişisel talepleri"],
+                        aciklama: "Kanun, dilek ve şikâyet hakkının kullanılmasını kapsar."
+                    },
+                    {
+                        id: "dilekce_5",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre;\nA- Fransa'da ikamet eden yabancılar\nB- Türkiye'de ikamet eden yabancılar\nC- Almanya'da ikamet eden Türk vatandaşları\nYukarıdaki seçeneklerden hangileri Türkiye Büyük Millet Meclisi ile idari makamlara yapılan dilek ve şikâyetler hakkında başvuru yapma hakkına sahiptir?",
+                        dogruCevap: "B ve C",
+                        yanlisCevaplar: ["Yalnız A", "A ve C", "A ve B", "A, B ve C"],
+                        aciklama: "Türk vatandaşları her yerden, Türkiye'de ikamet eden yabancılar ise karşılıklılık esasıyla Türkiye'de başvuru yapabilir."
+                    },
+                    {
+                        id: "dilekce_6",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye'de yaşayan yabancılar, dilekçe hakkını kullanabilirler mi?",
+                        dogruCevap: "Evet, Türkiye'de ikamet eden yabancılar da kullanabilirler",
+                        yanlisCevaplar: ["Sadece öğrenci vizesi varsa kullanabilir", "Hayır, sadece Türk vatandaşları kullanabilir", "Evet, ama sadece 1 yıldan fazla ikamet edenler", "Evet, yalnızca çalışma izni olanlar"],
+                        aciklama: "Kanuna göre Türkiye'de ikamet eden yabancılar bu haktan yararlanabilir."
+                    },
+                    {
+                        id: "dilekce_7",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, aşağıdakilerden hangileri Türkiye Büyük Millet Meclisi ve idari makamlara dilek ve şikayetlerde bulunma hakkına sahiptir?",
+                        dogruCevap: "Türk vatandaşları ve Türkiye'de ikamet eden yabancılar",
+                        yanlisCevaplar: ["Yalnızca Türk vatandaşları", "Yalnızca Türkiye'de ikamet eden yabancılar", "Avrupa Birliği vatandaşları, Türkiye'de ikamet eden yabancılar ile birlikte Türk vatandaşları", "Yalnızca Türkiye'de ikamet eden Türk vatandaşları"],
+                        aciklama: "Hak sahibi gruplar Türk vatandaşları ile Türkiye'de ikamet eden yabancılardır."
+                    },
+                    {
+                        id: "dilekce_8",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilek ve şikayetler hangi kurumlara yapılır?",
+                        dogruCevap: "Türkiye Büyük Millet Meclisi ve idari makamlar",
+                        yanlisCevaplar: ["Sadece Türkiye Büyük Millet Meclisi", "Sadece idari makamlar", "Sadece yerel yönetimler", "Sadece Bakanlıklar"],
+                        aciklama: "Başvuru mercileri TBMM ve yetkili idari makamlardır."
+                    },
+                    {
+                        id: "dilekce_9",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçe hakkı kapsamında Türkiye'de ikamet eden yabancılar aşağıdaki hangi ilke gözetilerek bu haktan yararlanabilirler?",
+                        dogruCevap: "Karşılıklılık esası",
+                        yanlisCevaplar: ["Açıklık esası", "Eşitlik esası", "Gizlilik esası", "Saydamlık esası"],
+                        aciklama: "Yabancılar için karşılıklılık (mütekabiliyet) esası şarttır."
+                    },
+                    {
+                        id: "dilekce_10",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, aşağıdaki ifadelerden hangileri yanlıştır?\nI. Türk vatandaşlarının ve Türkiye'de ikamet eden yabancıların, kendileri ve kamu ile ilgili dilek ve şikayetleri konusunda yetkili makamlara yaptıkları başvuruların sonucu veya yapılmakta olan işlemin safahatı hakkında, dilekçe sahiplerine en geç on beş gün içinde gerekçeli olarak cevap verilir.\nII. Türkiye'de ikamet eden yabancılar, karşılıklılık esası gözetilmek ve dilekçelerinin Türkçe yazılması kaydıyla dilekçe hakkından yararlanabilirler.\nIII. Türk vatandaşları, kendileriyle veya kamu ile ilgili dilek ve şikayetleri hakkında, Türkiye Büyük Millet Meclisi'ne ve yetkili makamlara yazı ile başvurma hakkına sahiptirler.",
+                        dogruCevap: "Yalnız I",
+                        yanlisCevaplar: ["Yalnız II", "II ve III", "I ve III", "I, II ve III"],
+                        aciklama: "Cevap verme süresi on beş gün değil, otuz gündür."
+                    },
+                    {
+                        id: "dilekce_11",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye'de ikamet eden yabancılar dilekçelerini hangi dilde yazmalıdırlar?",
+                        dogruCevap: "Türkçe",
+                        yanlisCevaplar: ["Fransızca", "İngilizce", "Almanca", "İspanyolca"],
+                        aciklama: "Yabancıların dilekçelerini Türkçe yazma zorunluluğu vardır."
+                    },
+                    {
+                        id: "dilekce_12",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye Büyük Millet Meclisi veya yetkili makamlara verilen dilekçelerde bulunması zorunlu olan bilgiler nelerdir?\nI. Dilekçe sahibinin telefon numarası\nII. Dilekçe sahibinin kimlik numarası\nIII. Dilekçe sahibinin imzası\nIV. Dilekçe sahibinin iş veya ikametgâh adresi\nV. Dilekçe sahibinin adı-soyadı",
+                        dogruCevap: "III, IV ve V",
+                        yanlisCevaplar: ["I, II ve III", "I, II, III ve IV", "II, IV ve V", "I, II ve V"],
+                        aciklama: "Zorunlu unsurlar: Ad-soyad, imza ve iş/ikametgâh adresidir."
+                    },
+                    {
+                        id: "dilekce_13",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçelerde hangi bilgi bulunması zorunlu şartlardan biri değildir?",
+                        dogruCevap: "Kimlik numarası",
+                        yanlisCevaplar: ["İş veya ikametgâh adresi", "İmzası", "Soyadı", "Adı"],
+                        aciklama: "TC kimlik numarası dilekçenin geçerliliği için kanunen zorunlu unsurlar arasında sayılmamıştır."
+                    },
+                    {
+                        id: "dilekce_14",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, TBMM'ye veya yetkili makamlara verilen dilekçelerden hangilerini taşıyanlar incelenemez?\nI. Adısoyadı ve imzası ile iş veya ikametgâh adresi bulunmayanlar\nII. Belli bir konuyu ihtiva etmeyenler\nIII. Yargı mercilerinin görevine giren konularla ilgili olanlar",
+                        dogruCevap: "I, II ve III",
+                        yanlisCevaplar: ["Yalnız I", "I ve III", "II ve III", "I ve II"],
+                        aciklama: "Bu üç durum da dilekçenin incelenmemesine (işleme konulmamasına) yol açar."
+                    },
+                    {
+                        id: "dilekce_15",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre;\nI- Bağkur veya SGK Kaydı\nII. İş veya İkametgâh adresi\nIII. İmzası\nIV- Adı Soyadı\nVerilenlerden hangilerinin dilekçede bulunması gerekir?",
+                        dogruCevap: "II, III ve IV",
+                        yanlisCevaplar: ["Yalnız III", "I ve III", "I, II ve III", "I, II, III ve IV"],
+                        aciklama: "Ad-soyad, imza ve adres zorunludur."
+                    },
+                    {
+                        id: "dilekce_16",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçede bulunması zorunlu olan bilgiler birlikte nerede doğru verilmiştir?",
+                        dogruCevap: "Dilekçe sahibinin adı-soyadı, imzası, iş veya ikametgâh adresi",
+                        yanlisCevaplar: ["Adı-soyadı, telefon numarası, kimlik numarası", "Adı-soyadı, telefon numarası, kimlik numarası, adres", "Kimlik numarası, adres, telefon", "İmza, adres, telefon"],
+                        aciklama: "Kanunda belirtilen 3 temel zorunlu unsurdur."
+                    },
+                    {
+                        id: "dilekce_17",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçe sahibinin hangi bilgisi zorunlu olarak belirtilmelidir?",
+                        dogruCevap: "İş veya ikametgâh adresi",
+                        yanlisCevaplar: ["Sağlık durumu", "Eğitim durumu", "Hobileri", "Aile durumu"],
+                        aciklama: "Adres zorunlu bilgiler arasındadır."
+                    },
+                    {
+                        id: "dilekce_18",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçe gönderirken hangisi gerekli değildir?",
+                        dogruCevap: "Dilekçe sahibinin kimlik fotokopisi",
+                        yanlisCevaplar: ["Dilekçe sahibinin imzası", "Dilekçe sahibinin soyadı", "Dilekçe sahibinin iş veya ikametgâh adresi", "Dilekçe sahibinin adı"],
+                        aciklama: "Kimlik fotokopisi zorunlu bir şekil şartı değildir."
+                    },
+                    {
+                        id: "dilekce_19",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, hangi bilginin eksik olması dilekçenin reddi/incelenmemesi için neden olabilir?",
+                        dogruCevap: "İmza",
+                        yanlisCevaplar: ["Tarih", "Telefon numarası", "Genel bilgi", "Eklerin sunulması"],
+                        aciklama: "İmzasız dilekçeler incelenmez."
+                    },
+                    {
+                        id: "dilekce_20",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, eğer bir dilekçe, konusuyla ilgili olmayan bir idari makama sunulursa, bu makamın yapması gereken işlem nedir?",
+                        dogruCevap: "Dilekçeyi yetkili idari makama göndermelidir.",
+                        yanlisCevaplar: ["İşleme koymalı ve yanıt vermelidir.", "Reddederek dilekçe sahibine geri göndermelidir.", "Saklamalı ve herhangi bir işlem yapmamalıdır.", "Yargı mercilerine iletmelidir."],
+                        aciklama: "Görevsiz makam dilekçeyi ilgili merciye gönderir."
+                    },
+                    {
+                        id: "dilekce_21",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçe konusuyla ilgili olmayan makama verilirse ne yapılır?\nI. Dilekçeyi yetkili idari makama göndermeli ve dilekçe sahibine bilgi verilmelidir.\nII. Dilekçeyi işleme koyup yanıt vermelidir.\nIII. Dilekçeyi geri çevirip bilgilendirmelidir.",
+                        dogruCevap: "Yalnız I",
+                        yanlisCevaplar: ["Yalnız II", "Yalnız III", "I ve II", "II ve III"],
+                        aciklama: "Yetkili makama gönderilir ve durum sahibine bildirilir."
+                    },
+                    {
+                        id: "dilekce_22",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçe hangi durumda yetkili idari makama gönderilir?",
+                        dogruCevap: "Dilekçe konusuyla ilgili olmayan bir makama verildiğinde",
+                        yanlisCevaplar: ["Karar verilmediğinde", "Sahipleri arasında ihtilaf olduğunda", "Tarihi geçerli olmadığında", "Bilgisi eksik olduğunda"],
+                        aciklama: "Yanlış makama verilmesi halinde yetkili mercie sevk edilir."
+                    },
+                    {
+                        id: "dilekce_23",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçenin yetkili idari makama gönderileceği durum hangisidir?",
+                        dogruCevap: "Dilekçe, konusuyla ilgili olmayan bir idari makama verilmesi durumunda",
+                        yanlisCevaplar: ["Sadece dilekçe sahibinin kendisi tarafından verilmesi", "Zamanında verilmemesi", "Eksik belgelerle verilmesi", "Yanlış doldurulması"],
+                        aciklama: "Konu dışı idari makama sunulan dilekçeler için geçerlidir."
+                    },
+                    {
+                        id: "dilekce_24",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, dilekçelerin yetkili idari makama gönderilmesiyle ilgili olarak, dilekçe sahibine hangi bilgi verilir?",
+                        dogruCevap: "Yetkili idari makama gönderildiği bilgisi",
+                        yanlisCevaplar: ["Onaylandığı bilgisi", "Kabul edilmediği bilgisi", "Makamın kapandığı bilgisi", "Telefon alacağı bilgisi"],
+                        aciklama: "Durum, başvuru sahibine ayrıca bildirilir."
+                    },
+                    {
+                        id: "dilekce_25",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, incelenmeme nedenleri:\nI. Belli bir konunun olmaması\nII. Yalnızca genel ve soyut ifadelerin bulunması\nIII. Yargı mercilerinin görevine girmesi\nIV. Zorunlu şartları taşımaması\nHangileri incelenmemeye neden olur?",
+                        dogruCevap: "I, III ve IV",
+                        yanlisCevaplar: ["Yalnızca I ve II", "Yalnızca III ve IV", "Yalnızca I ve III", "Yalnızca II ve III"],
+                        aciklama: "Belli bir konu içermeme, yargı alanına girme ve zorunlu şekil şartlarını taşımama incelenmeme nedenidir."
+                    },
+                    {
+                        id: "dilekce_26",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, yetkili makamlara yapılan dilekçelerin sonuçları hakkında doğru ifade nedir?",
+                        dogruCevap: "Dilekçelerin sonuçları gerekçeli olarak en geç otuz gün içinde bildirilmelidir.",
+                        yanlisCevaplar: ["Süre en geç kırk beş gündür.", "İşlem safahatı duyurulursa sonuç bildirilmez.", "Sadece safahat bilgisi verilir.", "Gerekçeli olarak elli gün içinde bildirilir."],
+                        aciklama: "Cevap süresi otuz gündür."
+                    },
+                    {
+                        id: "dilekce_27",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye'de ikamet eden yabancıların başvurularının sonucu hakkında dilekçe sahiplerine en geç kaç gün içinde gerekçeli olarak cevap verilir?",
+                        dogruCevap: "30",
+                        yanlisCevaplar: ["15", "20", "45", "60"],
+                        aciklama: "Genel cevap verme süresi 30 gündür."
+                    },
+                    {
+                        id: "dilekce_28",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, başvuruların sonucu veya yapılmakta olan işlemin safahatı hakkında dilekçe sahiplerine en geç ................... içinde gerekçeli olarak cevap verilir.",
+                        dogruCevap: "30gün",
+                        yanlisCevaplar: ["10gün", "60gün", "90gün", "120gün"],
+                        aciklama: "Boş bırakılan yere 30 gün gelmelidir."
+                    },
+                    {
+                        id: "dilekce_29",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Dilekçe Komisyonunun görevlerinden biri değildir?",
+                        dogruCevap: "İlgililer hakkında soruşturma açmak",
+                        yanlisCevaplar: ["Kamu kurum ve kuruluşlarından bilgi ve belge almak", "Bilirkişi görevlendirmek ve yerinde inceleme yapmak", "Özel kuruluşlardan her türlü bilgi ve belgeyi almak", "İlgilileri çağırıp bilgi almak, idari denetimin yapılmasını istemek"],
+                        aciklama: "Komisyon idari/adli soruşturma açma yetkisine sahip değildir."
+                    },
+                    {
+                        id: "dilekce_30",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, ilgili kamu kurum veya kuruluşları TBMM Dilekçe Komisyonunca gönderilen dilekçeleri kaç gün içinde cevaplandırırlar?",
+                        dogruCevap: "30",
+                        yanlisCevaplar: ["10", "15", "45", "60"],
+                        aciklama: "Komisyon tarafından gönderilen dilekçeler 30 gün içinde yanıtlanır."
+                    },
+                    {
+                        id: "dilekce_31",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye Büyük Millet Meclisine gönderilen dilekçelerin, Dilekçe Komisyonunda incelenmesi ve karara bağlanması kaç gün içinde sonuçlandırılır?",
+                        dogruCevap: "60",
+                        yanlisCevaplar: ["10", "15", "30", "45"],
+                        aciklama: "Komisyonda inceleme ve karar süresi 60 gündür."
+                    },
+                    {
+                        id: "dilekce_32",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye Büyük Millet Meclisi Dilekçe Komisyonunun görevleri ile ilgili olarak hangi seçenek yoktur?",
+                        dogruCevap: "Adli soruşturma açmak",
+                        yanlisCevaplar: ["İdari denetimin yapılmasını istemek", "Yerinde inceleme yapmak", "Kamu kurumu niteliğindeki meslek kuruluşlarından bilgi almak", "Bilirkişi görevlendirmek"],
+                        aciklama: "Komisyonun adli soruşturma açma görevi yoktur."
+                    },
+                    {
+                        id: "dilekce_33",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, TBMM Dilekçe Komisyonu hangilerinden her türlü bilgi ve belgeyi alma hakkına sahiptir?\nI. Özel kuruluşlar\nII. Kamu kurum ve kuruluşları\nIII. Kamu kurumu niteliğindeki meslek kuruluşları",
+                        dogruCevap: "I, II ve III",
+                        yanlisCevaplar: ["Yalnız III", "Yalnız I", "I ve II", "II ve III"],
+                        aciklama: "Komisyon kamu, özel ve meslek kuruluşlarından bilgi/belge isteyebilir."
+                    },
+                    {
+                        id: "dilekce_34",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, inceleme ve karara bağlamanın esas ve usulleri nerenin İçtüzüğünde gösterilir?",
+                        dogruCevap: "Türkiye Büyük Millet Meclisi",
+                        yanlisCevaplar: ["Valilik", "Cumhurbaşkanlığı", "İçişleri Bakanlığı", "İlgili Bakanlık"],
+                        aciklama: "TBMM İçtüzüğü hükümlerine göre yürütülür."
+                    },
+                    {
+                        id: "dilekce_35",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, TBMM'ye gönderilen dilekçelerin incelenmesi ve sonuçlandırılması süreci hakkında doğru ifade nedir?",
+                        dogruCevap: "Dilekçeler, Dilekçe Komisyonunda incelenip karara bağlanması altmış gün içinde sonuçlandırılır ve ilgili kamu kurum veya kuruluşları Türkiye Büyük Millet Meclisi Dilekçe Komisyonunca gönderilen dilekçeleri otuz gün içinde cevaplandırır.",
+                        yanlisCevaplar: ["Kırk beş gün / yirmi gün", "Doksan gün / kırk beş gün", "Otuz gün / altmış gün", "Altmış gün / yetmiş gün"],
+                        aciklama: "Komisyon inceleme süresi 60 gün, kurumların cevap verme süresi 30 gündür."
+                    },
+                    {
+                        id: "dilekce_36",
+                        soruMetni: "Türkiye Büyük Millet Meclisine gönderilen dilekçelerin, Dilekçe Komisyonunda incelenmesi ve karara bağlanması ...... gün içinde sonuçlandırılır. İlgili kamu kurum veya kuruluşları Türkiye Büyük Millet Meclisi Dilekçe Komisyonunca gönderilen dilekçeleri ...... gün içinde cevaplandırır.",
+                        dogruCevap: "60/30",
+                        yanlisCevaplar: ["30/15", "45/20", "75/45", "90/60"],
+                        aciklama: "Boşluklara sırasıyla 60 ve 30 gelmelidir."
+                    },
+                    {
+                        id: "dilekce_37",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, inceleme ve karara bağlamanın esas ve usulleri nerede gösterilir?",
+                        dogruCevap: "Türkiye Büyük Millet Meclisi İçtüzüğü",
+                        yanlisCevaplar: ["Anayasa", "İdare Hukuku", "Kamu Hukuku Kanunları", "Dilekçe Komisyonu Raporları"],
+                        aciklama: "Esas ve usuller TBMM İçtüzüğü'nde yer alır."
+                    },
+                    {
+                        id: "dilekce_38",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, Türkiye Büyük Millet Meclisine yapılan dilekçelerin incelenmesi hangi organ tarafından yürütülür?",
+                        dogruCevap: "Türkiye Büyük Millet Meclisi Dilekçe Komisyon",
+                        yanlisCevaplar: ["Üst düzey yönetici", "Dilekçe veren", "Kamu çalışanları", "Yerel yönetimler"],
+                        aciklama: "İncelemeyi Dilekçe Komisyonu yürütür."
+                    },
+                    {
+                        id: "dilekce_39",
+                        soruMetni: "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun'a göre, TBMM'ye yapılan dilekçelerin incelenmesi sürecine dair hangisi yanlıştır?",
+                        dogruCevap: "Dilekçe Komisyonu, kamu kurum ve kuruluşlarından bilgi ve belge talep edemez.",
+                        yanlisCevaplar: ["Dilekçeler Komisyon tarafından altmış gün içinde incelenip karara bağlanır.", "İlgili kamu kurum ve kuruluşları otuz gün içinde cevap vermek zorundadır.", "Komisyon idari denetim yapma talebinde bulunabilir.", "Komisyon bilirkişi atayabilir."],
+                        aciklama: "Komisyon kurum ve kuruluşlardan her türlü bilgi ve belgeyi talep edebilir."
+                    }
+                ] 
+            },
+            { id: "d14", dersAdi: "14. 7315 sayılı Güvenlik Soruşturması Kanunu", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d15", 
+    dersAdi: "15. 3628 Sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu", 
+    sinavSoruSayisi: 3, 
+    sorular: [
+        {
+            id: "3628_1",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, aşağıdakilerden hangisi mal bildiriminde bulunmak zorunda değildir?",
+            dogruCevap: "Muhtarlar ve ihtiyar heyeti üyeleri",
+            yanlisCevaplar: [
+                "Cumhurbaşkanı yardımcıları ve bakanlar",
+                "Noterler",
+                "Türk Hava Kurumunun genel yönetim ve merkez denetleme kurulu üyeleri",
+                "Siyasi parti genel başkanları"
+            ],
+            aciklama: "3628 sayılı Kanun'un 2. maddesinde mal bildiriminde bulunmak zorunda olanlar sayılmış olup köy ve mahalle muhtarları ile ihtiyar heyeti üyeleri bu kapsamda yer almaz."
+        },
+        {
+            id: "3628_2",
+            soruMetni: "Aşağıdakilerden hangisi 3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre mal bildiriminde bulunma yükümlülüğüyle ilgili doğru bir ifadedir?",
+            dogruCevap: "Mal bildirimleri yenilenmelidir.",
+            yanlisCevaplar: [
+                "Mal bildirimleri sadece görevden ayrılırken verilir.",
+                "Mal bildiriminde bulunmak, sadece kamu görevlilerinin isteğine bağlıdır.",
+                "Mal bildirimlerinde bulunanlar cezalandırılamaz.",
+                "Mal bildirimleri sadece gerçeğe uygun olmayan durumlarda istenir."
+            ],
+            aciklama: "Kanun'un 7. maddesi uyarınca bu kapsamda göreve devam edenler, sonu (0) ve (5) ile biten yılların en geç Şubat ayı sonuna kadar mal bildirimlerini yenilemek zorundadır."
+        },
+        {
+            id: "3628_3",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, aşağıdakilerden hangisi, kamu görevlilerinin yabancı kişi veya kuruluşlardan aldıkları hediye veya hibelere ilişkin doğru bir ifadedir?",
+            dogruCevap: "Hediyenin değeri on aylık net asgari ücreti aşıyorsa, bir ay içinde kuruma teslim edilmelidir.",
+            yanlisCevaplar: [
+                "Kamu görevlileri her türlü hediyeyi kişisel olarak saklayabilir.",
+                "Yabancı kuruluşlardan alınan hediyeler yalnızca yıl sonunda bildirilmelidir.",
+                "Yabancı kişilerden alınan hediyeler sadece izin alınarak saklanabilir.",
+                "Kamu görevlileri sadece nakit hediyeleri kuruma teslim etmek zorundadır."
+            ],
+            aciklama: "Yabancı devlet adamları veya uluslararası kuruluşlardan alınan ve değeri 10 aylık net asgari ücreti aşan hediye veya hibelerin 1 ay içinde kendi kurumlarına teslim edilmesi zorunludur."
+        },
+        {
+            id: "3628_4",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, aşağıdakilerden hangisi mal bildirimine dahil değildir?",
+            dogruCevap: "Yabancı devlet adamları tarafından verilen imzalı hatıra fotoğraflarının çerçeveleri",
+            yanlisCevaplar: [
+                "Kişinin kendi adına kayıtlı gayrimenkulleri",
+                "Banka mevduat hesapları",
+                "Üzerine kayıtlı motorlu taşıtlar",
+                "Kıymetli mücevherat"
+            ],
+            aciklama: "Kanun'un 3. maddesi uyarınca yabancı devlet adamları ve milletlerarası kuruluş temsilcileri tarafından verilen imzalı hatıra fotoğraflarının çerçeveleri mal bildirimi ve teslim zorunluluğu kapsamı dışında tutulmuştur."
+        },
+        {
+            id: "3628_5",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, kamu görevlilerinin, değerinin on aylık net asgari ücreti aşan hediyeleri teslim etme yükümlülüğü kapsamında, hediyelerin bedellerinin tespiti aşağıdakilerden hangisi tarafından yapılır?",
+            dogruCevap: "Hazine ve Maliye Bakanlığı",
+            yanlisCevaplar: [
+                "Cumhurbaşkanlığı Genel Sekreterliği",
+                "Türkiye Büyük Millet Meclisi",
+                "Danıştay",
+                "Kamu kurumunun etik kurulu"
+            ],
+            aciklama: "Hediyelerin bedellerinin tespiti ve kıymet takdir işlemleri Hazine ve Maliye Bakanlığı (Defterdarlık Takdir Komisyonları) vasıtasıyla yürütülür."
+        },
+        {
+            id: "3628_6",
+            soruMetni: "Aşağıdakilerden hangisi, 3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre “haksız mal edinme” kapsamında değerlendirilir?",
+            dogruCevap: "Sosyal yaşantısına göre geliriyle açıklanamayacak düzeydeki harcamalar",
+            yanlisCevaplar: [
+                "Miras yoluyla elde edilen ve belgelendirilen mal varlığı",
+                "İlgilinin gelirine oranla açıklanabilir düzeydeki harcamalar",
+                "Kanuna uygun şekilde kazanıldığı ispat edilen mal varlığı",
+                "Bağış yoluyla edinilen ve resmi kayıtlarla bildirilen mal varlığı"
+            ],
+            aciklama: "Kanuna ve genel ahlaka uygun olarak sağlandığı ispat edilmeyen veya kişinin geliriyle uyumlu olmayan harcamalar haksız mal edinme sayılır."
+        },
+        {
+            id: "3628_7",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, kamu görevlisinin mal bildiriminde yer alması gereken unsurlardan biri aşağıdakilerden hangisidir?",
+            dogruCevap: "Görevlinin, eşinin ve velayet altındaki çocuklarının sahip olduğu altın, para, hisse senedi gibi taşınır mallar",
+            yanlisCevaplar: [
+                "Yalnızca görevlinin şahsi taşınmaz malları",
+                "Görevlinin maaşından yapılan kesintiler",
+                "Görevlinin eşinin eğitim durumu",
+                "Görevlinin doğrudan yönettiği kamu projeleri"
+            ],
+            aciklama: "Mal bildirimi; kişinin kendisinin, eşinin ve velayeti altındaki çocuklarının taşınır/taşınmaz malları ile hak, alacak ve borçlarını kapsar."
+        },
+        {
+            id: "3628_8",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, Cumhurbaşkanı yardımcısı veya bakan olarak atanan bir kişi, mal bildirimini en geç ne zaman vermelidir?",
+            dogruCevap: "Atamayı izleyen 1 ay içinde",
+            yanlisCevaplar: [
+                "Atamayı izleyen 15 gün içinde",
+                "Atamayı izleyen üç ay içinde",
+                "Göreve başladıktan sonraki ilk yıl içinde",
+                "Göreve başladıktan sonraki ilk beş yıl içinde"
+            ],
+            aciklama: "Atamalarda ve göreve başlamalarda mal bildiriminin atamayı/göreve başlamayı takip eden 1 ay içinde verilmesi zorunludur."
+        },
+        {
+            id: "3628_9",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildiriminde bulunan kişi mal varlığında önemli bir değişiklik olduğunda bu durumu ne kadar süre içinde bildirmek zorundadır?",
+            dogruCevap: "Bir ay içinde",
+            yanlisCevaplar: [
+                "Bir hafta içinde",
+                "On beş gün içinde",
+                "Üç ay içinde",
+                "Altı ay içinde"
+            ],
+            aciklama: "Net aylık tutarının 5 katını aşan önemli mal varlığı değişikliklerinde durumun gerçekleştiği tarihi takip eden 1 ay içinde ek bildirim verilir."
+        },
+        {
+            id: "3628_10",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, seçimle göreve gelen kamu görevlileri, mal bildirimlerini en geç ne zaman vermek zorundadır?",
+            dogruCevap: "Seçimin kesinleşme tarihini izleyen iki ay içinde",
+            yanlisCevaplar: [
+                "Seçim tarihi itibarıyla bir ay içinde",
+                "Seçim sonuçları açıklandığı gün",
+                "Seçimin kesinleşme tarihini izleyen bir ay içinde",
+                "Göreve başladıktan bir yıl sonra"
+            ],
+            aciklama: "Seçimle gelinen görevlerde bildirimin seçimin kesinleşme tarihini izleyen 2 ay içinde verilmesi gerekir."
+        },
+        {
+            id: "3628_11",
+            soruMetni: "\"Yönetim ve denetim kurulu üyelikleri ile komisyon üyeliklerine seçim ve atamalarda, göreve başlama tarihini izleyen ……….. içinde mal bildirimi verilmesi zorunludur.\" 3628 sayılı Kanun'a göre boş bırakılan yere hangisi getirilmelidir?",
+            dogruCevap: "bir ay",
+            yanlisCevaplar: [
+                "iki ay",
+                "Üç ay",
+                "altı ay",
+                "bir yıl"
+            ],
+            aciklama: "Yönetim/denetim kurulu ve komisyon üyeliklerine seçim ve atamalarda göreve başlama tarihini izleyen bir ay içinde bildirim verilmelidir."
+        },
+        {
+            id: "3628_12",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildirimi yükümlülüğü bulunan bir kişi, görevinin sona ermesi durumunda mal bildirimini en geç ne zaman vermelidir?",
+            dogruCevap: "Ayrılma tarihini izleyen bir ay içinde",
+            yanlisCevaplar: [
+                "Görevden ayrıldığı gün",
+                "Ayrılma tarihini izleyen bir hafta içinde",
+                "Ayrılma tarihini izleyen 15 gün içinde",
+                "Görevden ayrıldıktan sonraki ilk yıl içinde"
+            ],
+            aciklama: "Görevin sona ermesi halinde ayrılma tarihini takip eden bir ay içinde bildirim teslim edilir."
+        },
+        {
+            id: "3628_13",
+            soruMetni: "“Gazete sahibi gerçek kişiler ile, gazete sahibi şirketlerin yönetim ve denetim kurulu üyeleri faaliyete geçme tarihini, sorumlu müdürleri, başyazarları ve fıkra yazarları ise görevlerine başlama tarihini izleyen ……. içinde mal bildiriminde bulunmak zorundadır.\"",
+            dogruCevap: "bir ay",
+            yanlisCevaplar: [
+                "On beş gün",
+                "kırk beş gün",
+                "iki ay",
+                "Üç ay"
+            ],
+            aciklama: "Gazete sahipleri ve yöneticileri faaliyete geçme veya göreve başlama tarihini takip eden bir ay içinde mal bildirimi verirler."
+        },
+        {
+            id: "3628_14",
+            soruMetni: "\"Bu Kanun kapsamındaki görevlere devam edenler, sonu ….. ve ….. ile biten yılların en geç ….. ayı sonuna kadar mal bildirimlerini yenilemek zorundadırlar.\"",
+            dogruCevap: "0 – 5 / Şubat",
+            yanlisCevaplar: [
+                "1 – 6 / Mart",
+                "0 – 5 / Aralık",
+                "3 – 8 / Ocak",
+                "0 – 5 / Nisan"
+            ],
+            aciklama: "Genel beyan dönemlerinde, sonu 0 ve 5 ile biten yılların en geç Şubat ayı sonuna kadar bildirimler yenilenir."
+        },
+        {
+            id: "3628_15",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildirimlerinin doğruluğu ve tutarlılığı hangi yöntemle kontrol edilir?",
+            dogruCevap: "Yeni mal bildirimleri, yetkili merci tarafından daha önceki mal bildirimleriyle karşılaştırılır.",
+            yanlisCevaplar: [
+                "Yeni mal bildirimleri, yetkili merci tarafından rastgele seçilerek incelenir.",
+                "Mal bildirimleri sadece görevden ayrılırken kontrol edilir.",
+                "Mal bildirimlerinin kontrolü yılda bir kez yapılır.",
+                "Mal bildirimlerinin doğruluğu bildirim sahibinin beyanına bırakılır."
+            ],
+            aciklama: "Bildirimlerin doğruluğu yetkili mercilerce kişinin daha önce vermiş olduğu mal bildirimleriyle karşılaştırılmak suretiyle denetlenir."
+        },
+        {
+            id: "3628_16",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, aşağıdakilerden hangisi, Kamu Görevlileri Etik Kurulu'nun mal bildirimleri ile ilgili yetkisini doğru ifade eder?",
+            dogruCevap: "Mal bildirimlerini gerektiğinde inceleme yetkisine sahiptir.",
+            yanlisCevaplar: [
+                "Mal bildirimlerini sadece toplama yetkisine sahiptir.",
+                "Mal bildirimlerini onaylama yetkisine sahiptir.",
+                "Mal bildirimlerini sadece arşivleme yetkisine sahiptir.",
+                "Mal bildirimlerini hazırlama ve düzenleme yetkisine sahiptir."
+            ],
+            aciklama: "Kamu Görevlileri Etik Kurulu, etik ilkelere aykırılık iddiaları ve mal bildirimleri üzerinde gerektiğinde inceleme yapma yetkisine sahiptir."
+        },
+        {
+            id: "3628_17",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildirimleri aşağıdakilerden hangisinde saklanır?",
+            dogruCevap: "Bildirimde bulunan kişinin özel dosyasında, özel kanunlardaki hükümler saklı kalmak kaydıyla",
+            yanlisCevaplar: [
+                "Cumhurbaşkanlığı arşivinde",
+                "İlçe nüfus müdürlüğünde",
+                "Resmi gazetede yayımlanarak herkesin erişimine açık olarak",
+                "Mal bildirimleri saklanmaz, sadece inceleme amacıyla kullanılır"
+            ],
+            aciklama: "Mal bildirimleri gizli tutulur ve ilgililerin sicil veya özel dosyalarında muhafaza edilir."
+        },
+        {
+            id: "3628_18",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildirimlerinin doğruluğunun kontrolü için bilgi talep edildiğinde ilgili kişi ve kuruluşların hangi sürede Kurula bilgi vermesi zorunludur?",
+            dogruCevap: "30 gün içinde",
+            yanlisCevaplar: [
+                "7 gün içinde",
+                "15 gün içinde",
+                "60 gün içinde",
+                "90 gün içinde"
+            ],
+            aciklama: "Bildirimlerin doğruluğunu kontrol için istenen bilgi ve belgelerin ilgili kurum ve kuruluşlarca en geç 30 gün içinde cevaplandırılması zorunludur."
+        },
+        {
+            id: "3628_19",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, belirtilen sürelerde mal bildiriminde bulunmayanlara ne yapılır?",
+            dogruCevap: "İhtarda bulunulur.",
+            yanlisCevaplar: [
+                "Para cezası verilir.",
+                "Haklarında dava açılır.",
+                "İşten men edilir.",
+                "Uyarı mektubu gönderilir ama yasal bir yaptırım olmaz."
+            ],
+            aciklama: "Süresinde bildirimde bulunmayanlara verilecek ilk resmi işlem, yetkili merci tarafından yazılı ihtarda bulunulmasıdır."
+        },
+        {
+            id: "3628_20",
+            soruMetni: "“İhtarın kendisine tebliğinden itibaren ….. gün içinde mazeretsiz olarak mal bildiriminde bulunmayan kişiye, ….. aya kadar hapis cezası verilir.” Boş bırakılan yerlere sırasıyla ne getirilmelidir?",
+            dogruCevap: "Otuz - üç",
+            yanlisCevaplar: [
+                "yirmi - beş",
+                "yirmibeş - beş",
+                "Otuz - beş",
+                "kırk - altı"
+            ],
+            aciklama: "Kanun'un 10. maddesi uyarınca ihtarın tebliğinden itibaren 30 gün içinde mazeretsiz olarak bildirimde bulunmayana 3 aya kadar hapis cezası verilir."
+        },
+        {
+            id: "3628_21",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, soruşturma süresi içinde mal bildiriminde bulunmayanlara uygulanacak ceza aşağıdakilerden hangisidir?",
+            dogruCevap: "Üç aydan bir yıla kadar hapis cezası",
+            yanlisCevaplar: [
+                "Para cezası",
+                "Görevden men",
+                "Uyarı cezası",
+                "Kınama"
+            ],
+            aciklama: "Soruşturma esnasında/süresinde istenmesine rağmen mal bildiriminde bulunmayanlara 3 aydan 1 yıla kadar hapis cezası verilir."
+        },
+        {
+            id: "3628_22",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildiriminin muhtevası hakkında gerçeğe aykırı davranan kişiler hakkında aşağıdaki cezalandırma şekillerinden hangisi uygulanır?",
+            dogruCevap: "3 aydan 1 yıla kadar hapis cezası",
+            yanlisCevaplar: [
+                "Para cezası",
+                "3 aydan 6 aya kadar hapis cezası",
+                "Görevden uzaklaştırma",
+                "Uyarı ve kınama"
+            ],
+            aciklama: "Mal bildiriminin içeriği hakkında gerçeğe aykırı açıklama veya davranışta bulunanlar 3 aydan 1 yıla kadar hapis cezası ile cezalandırılır."
+        },
+        {
+            id: "3628_23",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, mal bildiriminin muhtevası hakkında gerçeğe aykırı davranışın basın yoluyla işlenmesi halinde ceza nasıl uygulanır?",
+            dogruCevap: "Ceza yarı oranında artırılır",
+            yanlisCevaplar: [
+                "Ceza yarı oranında azaltılır",
+                "Ceza iki katına çıkarılır",
+                "Ceza sadece para cezası olarak verilir",
+                "Ceza ertelenir"
+            ],
+            aciklama: "Bildirim muhtevasının açıklanması/gerçeğe aykırı davranılması suçunun basın yoluyla işlenmesi halinde verilecek ceza yarı oranında artırılır."
+        },
+        {
+            id: "3628_24",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, kanunen daha ağır bir cezayı gerektirmediği takdirde, gerçeğe aykırı mal bildiriminde bulunan kişiye hangi ceza verilir?",
+            dogruCevap: "6 aydan 3 yıla kadar hapis cezası",
+            yanlisCevaplar: [
+                "3 aydan 6 aya kadar hapis cezası",
+                "1 yıldan 5 yıla kadar hapis cezası",
+                "Para cezası",
+                "Görevden men cezası"
+            ],
+            aciklama: "Kanun'un 12. maddesi gereğince gerçeğe aykırı mal bildiriminde bulunanlara 6 aydan 3 yıla kadar hapis cezası verilir."
+        },
+        {
+            id: "3628_25",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, daha ağır bir cezayı gerektirmediği takdirde, haksız mal edinme suçu işleyen kişiye hangi ceza verilir?",
+            dogruCevap: "3 yıldan 5 yıla kadar hapis ve ağır para cezası",
+            yanlisCevaplar: [
+                "1 yıldan 3 yıla kadar hapis ve para cezası",
+                "5 yıldan 7 yıla kadar hapis ve para cezası",
+                "Para cezası dışında hapis cezası verilmez",
+                "Görevden men cezası ve para cezası"
+            ],
+            aciklama: "Kanun'un 13. maddesi gereğince haksız mal edinen, mal kaçıran veya gizleyenlere 3 yıldan 5 yıla kadar hapis ve adli para cezası verilir."
+        },
+        {
+            id: "3628_26",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, haksız edinilmiş malların zoralımı mümkün olmadığı durumlarda ne yapılır?",
+            dogruCevap: "Haksız edinilen değere eşit bedelin hazineye ödenmesine karar verilir",
+            yanlisCevaplar: [
+                "Haksız mal edinme suçu düşer",
+                "Haksız mal edinilen kişi hakkında soruşturma iptal edilir",
+                "Haksız mal edinilen mallar otomatik olarak sahibine iade edilir",
+                "Haksız mal edinme cezası sadece para cezasına çevrilir"
+            ],
+            aciklama: "Haksız edinilen malın zoralımı (müsaderesi) imkansızlaştığı takdirde bunun karşılığı olan rayiç bedelin Hazineye ödenmesine karar verilir."
+        },
+        {
+            id: "3628_27",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, haksız edinilen değere eşit bedelin hazineye ödenmesine karar verildiğinde, bu bedel hangi kanun hükümlerine göre tahsil olunur?",
+            dogruCevap: "Amme Alacaklarının Tahsil Usulü Hakkında Kanun hükümlerine",
+            yanlisCevaplar: [
+                "Vergi Usul Kanunu hükümlerine",
+                "İcra ve İflas Kanunu hükümlerine",
+                "Kabahatler Kanunu hükümlerine",
+                "Medeni Kanun hükümlerine"
+            ],
+            aciklama: "Hazineye ödenmesine karar verilen tutarlar 6183 sayılı Amme Alacaklarının Tahsil Usulü Hakkında Kanun hükümlerine göre tahsil edilir."
+        },
+        {
+            id: "3628_28",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, aşağıdakilerden hangisi, bir ihbar üzerine yapılması gereken ilk işlemlerden biridir?",
+            dogruCevap: "İhbar üzerine derhal bir ihbar tutanağı düzenlenir ve bir örneği muhbire verilir",
+            yanlisCevaplar: [
+                "İhbar konusu hemen soruşturmaya başlanmadan önce kamuoyuna duyurulur",
+                "İhbarın doğruluğu kesinleşmeden herhangi bir işlem yapılmaz",
+                "Muhbirin kimliği gizlenmeden ilgili makamlara bildiridir",
+                "İhbar dikkate alınmadan işlem yapılmaz"
+            ],
+            aciklama: "İhbarlar üzerine derhal bir tutanak düzenlenir ve talep edilmesi halinde tutanağın bir örneği muhbire verilir."
+        },
+        {
+            id: "3628_29",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, rüşvet, zimmet, irtikâp, görev sırasında kaçakçılık gibi ağır suçlara ilişkin ihbar ve şikayetler aşağıdaki kurumlardan hangisine doğrudan yapılır?",
+            dogruCevap: "Cumhuriyet Başsavcılığı",
+            yanlisCevaplar: [
+                "Valilik",
+                "İl disiplin kurulu",
+                "Bakanlık müfettişliği",
+                "Kamu Denetçiliği Kurumu"
+            ],
+            aciklama: "3628 sayılı Kanun kapsamındaki ağır suçlar (rüşvet, zimmet, irtikap vb.) doğrudan Cumhuriyet Başsavcılığına ihbar veya şikayet olunur."
+        },
+        {
+            id: "3628_30",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, aşağıdaki durumlardan hangisinde muhbirin kimliği açıklanabilir?",
+            dogruCevap: "İhbar asılsız çıktığında, aleyhine takibat yapılanın istemi üzerine muhbirin kimliği açıklanır.",
+            yanlisCevaplar: [
+                "İhbar doğru çıkarsa, muhbirin kimliği her zaman açıklanır.",
+                "Muhbirin kimliği, ihbarın ciddiyetine göre Cumhuriyet Başsavcısı tarafından otomatik olarak açıklanır.",
+                "Muhbirin kimliği, ihbar konusu suç kamuoyuna açıklandığında açıklanabilir.",
+                "Muhbirin kimliği ancak mahkeme kararıyla açıklanabilir."
+            ],
+            aciklama: "İhbarın asılsız çıkması durumunda, hakkında takibat yapılan kişinin talebi üzerine muhbirin kimliği kendisine bildirilir."
+        },
+        {
+            id: "3628_31",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, Cumhuriyet Savcısı aşağıdaki durumların hangisinde sanıktan mal bildiriminde bulunmasını isteyebilir?",
+            dogruCevap: "Soruşturmaya başladığında ihbarı doğrulayan emareler bulduğu takdirde",
+            yanlisCevaplar: [
+                "Soruşturma tamamlandıktan sonra sanığın talebi üzerine",
+                "Soruşturmaya başlamadan önce ihbarı yazılı olarak aldıktan sonra",
+                "Sadece sanığın kendisinden şüphe duyduğunda",
+                "Delil bulunmasa da ihbar üzerine"
+            ],
+            aciklama: "Cumhuriyet Savcısı, soruşturmaya başladığında ihbarı doğrulayan emareler bulursa sanıktan mal bildirimi isteyebilir."
+        },
+        {
+            id: "3628_32",
+            soruMetni: "“Haksız edinilen malın kaçırıldığı yolunda delil ve emare elde edildiği takdirde sanığın ikinci dereceye kadar kan ve sıhri hısımları ile gelini ve damadından mal bildiriminde bulunmaları istenir. Bu istemin sanığa ve diğer ilgililere ulaştığı tarihten itibaren …... gün içinde …… mal bildiriminin verilmesi zorunludur.\"",
+            dogruCevap: "yedi / Cumhuriyet Savcısına",
+            yanlisCevaplar: [
+                "beş / Cumhuriyet Savcısına",
+                "On / mahkemeye",
+                "yedi / savcılığa",
+                "yedi / mahkemeye"
+            ],
+            aciklama: "Sanığın yakınlarından mal bildirimi istendiğinde, bildirimin ulaştığı tarihten itibaren 7 gün içinde Cumhuriyet Savcısına sunulması şarttır."
+        },
+        {
+            id: "3628_33",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, soruşturmanın müfettiş veya muhakkik tarafından yapılması halinde sanık ve belirli ilgililerden mal bildiriminde bulunmalarını aşağıdakilerden hangisi ister?",
+            dogruCevap: "Müfettiş veya muhakkik",
+            yanlisCevaplar: [
+                "Hakim",
+                "Avukat",
+                "Kolluk Amiri",
+                "Noter"
+            ],
+            aciklama: "Soruşturma müfettiş veya muhakkik tarafından yürütülüyorsa mal bildirimi isteme yetkisi de bu müfettiş veya muhakkike aittir."
+        },
+        {
+            id: "3628_34",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, kamu davası açılmadan önce, haksız edinildiği şüphesiyle el konulması gereken para veya mal hakkında tedbir kararı alınmasını hangi makam talep edebilir?",
+            dogruCevap: "Cumhuriyet Savcısı",
+            yanlisCevaplar: [
+                "Müfettiş",
+                "Hakim",
+                "Muhakkik",
+                "Avukat"
+            ],
+            aciklama: "Dava açılmadan önce tedbir kararı alınmasını talep etme yetkisi soruşturmayı yürüten Cumhuriyet Savcısına aittir."
+        },
+        {
+            id: "3628_35",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, bilgi verme yükümlülüğüne uymayan kişiler hakkında aşağıdakilerden hangisi doğrudur?",
+            dogruCevap: "Bu kişiler hakkında bir yıldan üç yıla kadar hapis cezası verilir, ceza para cezasına veya tedbirlere çevrilemez ve ertelenemez.",
+            yanlisCevaplar: [
+                "Bu kişiler hakkında sadece para cezası verilir.",
+                "Bu kişiler hakkında bir yıldan üç yıla kadar hapis cezası verilir ve ceza ertelenebilir.",
+                "Bu kişiler sadece uyarılır, cezai işlem yapılmaz.",
+                "Bilgi verme zorunluluğu sadece kamu kurumları için geçerlidir."
+            ],
+            aciklama: "Kanun uyarınca istenen bilgi/belgeleri vermeyenler 1 yıldan 3 yıla kadar hapisle cezalandırılır; ceza paraya veya tedbire çevrilemez, ertelenemez."
+        },
+        {
+            id: "3628_36",
+            soruMetni: "\"Mal bildiriminin şekli, düzenleniş biçimi, sayısı, neleri kapsayacağı ve merciine nasıl ulaştırılacağı hususları ile Kanunun uygulanması bakımından gerekli görülecek diğer konular, ….. tarafından çıkarılacak bir ….. ile düzenlenir ve bu yönetmelik …….. 'de yayımlanır.”",
+            dogruCevap: "Cumhurbaşkanı — yönetmelik — Resmi Gazete",
+            yanlisCevaplar: [
+                "Meclis — kanun — Resmi Gazete",
+                "Bakanlık — genelge — resmi gazetesi",
+                "Cumhurbaşkanı — kanun — Ulusal Gazete",
+                "Mahkeme — karar — Resmi Gazete"
+            ],
+            aciklama: "Kanunun uygulanmasına ilişkin yönetmelik Cumhurbaşkanınca çıkarılır ve Resmi Gazete'de yayımlanır."
+        },
+        {
+            id: "3628_37",
+            soruMetni: "\"İl Genel Meclisi Üyeleri için ….. , Belediye Meclis Üyeleri için ….. , Belediye Başkanları için ….. , görevleri sebebiyle birden fazla mal bildiriminde bulunması gerekenler asli görevlerinden dolayı bir tek mal bildiriminde bulunurlar.\"",
+            dogruCevap: "Valiler - Belediye Meclis Üyeleri - İçişleri Bakanlığı",
+            yanlisCevaplar: [
+                "Valiler - Belediye Başkanları - İçişleri Bakanlığı",
+                "Kaymakamlar - Belediye Başkanları - İçişleri Bakanlığı",
+                "Valiler - Belediye Başkanları - Hazine ve Maliye Bakanlığı",
+                "Kaymakamlar - Belediye Meclis Üyeleri - İçişleri Bakanlığı"
+            ],
+            aciklama: "İl genel meclis üyeleri Valilere, belediye meclis üyeleri Belediye Meclis Üyelerine (Başkanlığa), Belediye Başkanları ise İçişleri Bakanlığına mal bildiriminde bulunur."
+        },
+        {
+            id: "3628_38",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, siyasi parti genel başkanlarının mal bildirimleri nereye verilir?",
+            dogruCevap: "Yargıtay Cumhuriyet Başsavcılığı",
+            yanlisCevaplar: [
+                "İçişleri Bakanlığı",
+                "Adalet Bakanlığı",
+                "Anayasa Mahkemesi",
+                "Meclis Başkanlığı"
+            ],
+            aciklama: "Siyasi parti genel başkanları mal bildirimlerini Yargıtay Cumhuriyet Başsavcılığına vermekle yükümlüdür."
+        },
+        {
+            id: "3628_39",
+            soruMetni: "“Türk Hava Kurumunun, Türkiye Kızılay Derneğinin ve kamu yararına sayılan derneklerin genel yönetim ve merkez denetleme kurulu üyeleri için ….. , bunların şube başkanları için bulundukları …… , görevleri sebebiyle birden fazla mal bildiriminde bulunması gerekenler asli görevlerinden dolayı bir tek mal bildiriminde bulunurlar.\"",
+            dogruCevap: "İçişleri Bakanlığı — İl Valilikleri",
+            yanlisCevaplar: [
+                "Adalet Bakanlığı — İl Jandarma Komutanlıkları",
+                "Hazine ve Maliye Bakanlığı — Kaymakamlıklar",
+                "İçişleri Bakanlığı — Mahalle Muhtarlıkları",
+                "Sağlık Bakanlığı — İl Sağlık Müdürlükleri"
+            ],
+            aciklama: "Dernek/THK/Kızılay genel yönetim üyeleri için merci İçişleri Bakanlığı, şube başkanları için ise bulundukları il valiliğidir."
+        },
+        {
+            id: "3628_40",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, vakıfların idare organlarında görev alan kişilerin mal bildirimleri hangi kuruma verilir?",
+            dogruCevap: "Vakıflar Genel Müdürlüğü",
+            yanlisCevaplar: [
+                "İçişleri Bakanlığı",
+                "Adalet Bakanlığı",
+                "Hazine ve Maliye Bakanlığı",
+                "Yargıtay Cumhuriyet Başsavcılığı"
+            ],
+            aciklama: "Vakıfların idare organlarında görev alanlar mal bildirimlerini Vakıflar Genel Müdürlüğüne verirler."
+        },
+        {
+            id: "3628_41",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, yeminli mali müşavirlerin mal bildirimleri aşağıdaki kurumlardan hangisine verilir?",
+            dogruCevap: "Hazine ve Maliye Bakanlığı",
+            yanlisCevaplar: [
+                "Adalet Bakanlığı",
+                "İçişleri Bakanlığı",
+                "Sayıştay",
+                "Ticaret Bakanlığı"
+            ],
+            aciklama: "Yeminli mali müşavirler mal bildirimlerini Hazine ve Maliye Bakanlığına sunarlar."
+        },
+        {
+            id: "3628_42",
+            soruMetni: "3628 sayılı Mal Bildiriminde Bulunulması, Rüşvet ve Yolsuzluklarla Mücadele Kanunu'na göre, Gazete sahibi gerçek kişiler ile gazete sahibi şirketlerin yönetim ve denetim kurulu üyeleri, sorumlu müdürleri, başyazarları ve fıkra yazarları mal bildirimlerini nereye verirler?",
+            dogruCevap: "Bulundukları yerin en büyük mülki amirliğine",
+            yanlisCevaplar: [
+                "İçişleri Bakanlığına",
+                "Basın Yayın Kurumuna",
+                "RTÜK'e",
+                "Cumhuriyet Başsavcılığına"
+            ],
+            aciklama: "Gazete sahipleri, yöneticileri, sorumlu müdürleri ve başyazarları bildirimlerini bulundukları yerin en büyük mülki amirliğine sunarlar."
+        }
+    ] },
+            { id: "d16", dersAdi: "16. 6698 sayılı Kişisel Verilerin Korunması Kanunu", sinavSoruSayisi: 2, sorular: [] },
+            { id: "d17", dersAdi: "17. Resmi Yazışmalarda Uygulanacak Usul ve Esaslar", sinavSoruSayisi: 8, sorular: [] },
+            { id: "d18", dersAdi: "18. Devlet Memurları Disiplin Yönetmeliği", sinavSoruSayisi: 3, sorular: [] },
+            { id: "d19", dersAdi: "19. İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği", sinavSoruSayisi: 3, sorular: [] },
+            { id: "d20", dersAdi: "20. Valilik/Kaymakamlık Birimleri Teşkilat ve Çalışma Yön.", sinavSoruSayisi: 4, sorular: [] },
+            { id: "d21", 
+    dersAdi: "21. Mal Bildiriminde Bulunulması Hakkında Yönetmelik", 
+    sinavSoruSayisi: 3, 
+    sorular: [
+        {
+            id: "mb_1",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'nin amacıyla ilgili aşağıdaki ifadelerden hangisi yanlıştır?",
+            dogruCevap: "Mal bildirimlerinin içeriğini belirlemez, sadece biçimsel yönlerine odaklanır.",
+            yanlisCevaplar: [
+                "Mal bildiriminin şeklini, düzenleniş biçimini, sayısını ve kapsamını düzenler.",
+                "Mal bildirimlerinin nasıl ve nereye ulaştırılacağını belirler.",
+                "Mal bildirimiyle ilgili usul ve esasları kapsar.",
+                "3626 sayılı Kanun uygulamasına ilişkin diğer esas ve usulleri düzenler."
+            ],
+            aciklama: "Yönetmelik sadece biçimsel yönlere odaklanmaz; mal bildiriminin kapsamını, konusunu ve haksız mal edinme gibi içeriksel esasları da düzenler."
+        },
+        {
+            id: "mb_2",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, aşağıdakilerden hangisi “haksız mal edinme” olarak kabul edilir?",
+            dogruCevap: "Genel ahlaka uygun olmayan ve gelirle uyumlu olmayan harcamalar",
+            yanlisCevaplar: [
+                "Gelirle uygun olduğu ispat edilebilen mallar",
+                "Mevzuata uygun olarak edinilen mallar",
+                "Sosyal yaşantıya uygun harcamalar",
+                "Yasal yollarla kazanılan mallar"
+            ],
+            aciklama: "Kanuna ve genel ahlaka uygun olarak sağlandığı ispat edilmeyen mallar veya haklı bir mazeret gösterilmeksizin gelirle uyumlu olmayan harcamalar haksız mal edinme sayılır."
+        },
+        {
+            id: "mb_3",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, aşağıdakilerden hangisi Mal Bildiriminde Bulunmak Zorunda Olanlar listesinde yanlış yerleştirilmiştir?",
+            dogruCevap: "Muhtarlar ve ihtiyar heyeti üyeleri, seçimle iş başına gelmeleri durumunda mal bildiriminde bulunmak zorundadır.",
+            yanlisCevaplar: [
+                "Noterler mal bildiriminde bulunmak zorundadır.",
+                "Türk Hava Kurumu genel yönetim kurulu üyeleri mal bildiriminde bulunmak zorundadır.",
+                "Kamu iktisadi teşebbüslerinde çalışan işçi niteliği taşımayan kamu görevlileri mal bildiriminde bulunmak zorundadır.",
+                "Gazete sahibi şirketlerin yönetim kurulu üyeleri mal bildiriminde bulunmak zorundadır."
+            ],
+            aciklama: "Köy ve mahalle muhtarları ile ihtiyar heyeti üyeleri mal bildiriminde bulunmak zorunda olanlar kapsamında yer almaz."
+        },
+        {
+            id: "mb_4",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, eşlerin mal bildirimi ile ilgili aşağıdakilerden hangisi doğrudur?",
+            dogruCevap: "Herikisi ayrı ayrı mal bildiriminde bulunur ve eşlerinin ve velayeti altındaki çocuklarının mallarını da bildirirler.",
+            yanlisCevaplar: [
+                "Eşlerden sadece biri mal bildiriminde bulunur ve diğerinin mallarını da bildirir.",
+                "Her ikisi de ayrı ayrı mal bildiriminde bulunur ve sadece kendi mallarını bildirirler.",
+                "Mal bildirimi sadece eşlerin çocukları için yapılır.",
+                "Mal bildirimi yalnızca biri tarafından yapılır, diğer eşin bildirimi gerekmez."
+            ],
+            aciklama: "Eşlerin her ikisinin de bildirimde bulunmak zorunda olmaları halinde, her biri ayrı ayrı beyannamede bulunur ve eşi ile velayeti altındaki çocuklarının mallarını da bildirir."
+        },
+        {
+            id: "mb_5",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, birden fazla mal bildirimi ile ilgili aşağıdaki ifadelerden hangisi yanlıştır?",
+            dogruCevap: "Kamu görevlisi, asli görevini bırakmadan vekaleten başka bir görevi de yürütüyorsa iki ayrı mal bildirimi yapmak zorundadır.",
+            yanlisCevaplar: [
+                "Asli görevde olan bir kamu görevlisi, ikinci bir görevi vekaleten yapıyorsa sadece asli görevinden mal bildirimi yapar.",
+                "İkinci görev asli görevden ayrı tutulur ancak mal bildirimi sadece asli görev için yapılır.",
+                "Asli görevden ayrı olarak ikinci görev yapan kişi, mal bildirimini tek seferde ve sadece asli görev için verir.",
+                "Asli görev uhdelerinde kalmak kaydıyla yürütülen ikinci görev, mal bildirimini etkilemez."
+            ],
+            aciklama: "Asli görevleri uhdelerinde kalmak kaydıyla ikinci bir görevi yürütenler sadece asli görevlerinden dolayı tek bir mal bildirimi verirler."
+        },
+        {
+            id: "mb_6",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, birden fazla mal bildiriminde bulunması gereken ancak kamu görevlisi olmayan kişiler nasıl mal bildiriminde bulunurlar?",
+            dogruCevap: "Her bir merciye ayrı ayrı mal bildiriminde bulunurlar.",
+            yanlisCevaplar: [
+                "Yalnızca bir merciye mal bildiriminde bulunurlar, o merci diğerlerine bilgi verir.",
+                "Mal bildirimini ilgili bakanlığa yapmak zorundadırlar.",
+                "Mal bildirimini noter aracılığıyla yaparlar.",
+                "Mal bildiriminde bulunmazlar, sadece yıllık beyanname verirler."
+            ],
+            aciklama: "Kamu görevlisi olmayan kişilerin birden fazla görevi sebebiyle bildirim verme zorunluluğu doğarsa, bu bildirimi her bir merciye ayrı ayrı yapmaları gerekir."
+        },
+        {
+            id: "mb_7",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kamu kurum ve kuruluşlarında görevli personel mal bildirimini hangi birime verir?",
+            dogruCevap: "Özlük işleri ile ilgili birimler",
+            yanlisCevaplar: [
+                "Hazine ve Maliye Bakanlığı",
+                "İlgili birim amiri",
+                "Değerlendirme Kurulu",
+                "İnsan Kaynakları Dairesi"
+            ],
+            aciklama: "Kurumlarında çalışan memur ve hizmetliler mal bildirimlerini özlük işleri ile ilgili birimlere/makamlara teslim ederler."
+        },
+        {
+            id: "mb_8",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, mal bildiriminin verileceği mercilerden biri Türkiye Büyük Millet Meclisi için aşağıdakilerden hangisidir?",
+            dogruCevap: "Türkiye Büyük Millet Meclisi Başkanlığı",
+            yanlisCevaplar: [
+                "Türkiye Cumhuriyeti Cumhurbaşkanlığı",
+                "Türkiye Büyük Millet Meclisi Dış İlişkiler Ofisi",
+                "Türkiye Büyük Millet Meclisi Genel Sekreterliği",
+                "Türkiye Büyük Millet Meclisi İnsan Kaynakları Dairesi"
+            ],
+            aciklama: "TBMM üyeleri mal bildirimlerini TBMM Başkanlığına verirler."
+        },
+        {
+            id: "mb_9",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kurum, teşebbüs, teşekkül ve kuruluşların genel müdürleri ile yönetim ve denetim kurulu üyeleri mal bildirimi için hangi mercie başvurmalıdır?",
+            dogruCevap: "İlgili bakanlıklar",
+            yanlisCevaplar: [
+                "Türkiye Büyük Millet Meclisi Başkanlığı",
+                "İçişleri Bakanlığı",
+                "Cumhurbaşkanlığı İletişim Başkanlığı",
+                "Hazine ve Maliye Bakanlığı"
+            ],
+            aciklama: "Kamu kurum ve kuruluşlarının genel müdürleri ile yönetim ve denetim kurulu üyeleri bildirimi ilgili bakanlıklara verirler."
+        },
+        {
+            id: "mb_10",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yüksek mahkemelerin daire başkan ve üyeleri mal bildirimlerini kime verir?",
+            dogruCevap: "İlgili mahkemenin başkanına",
+            yanlisCevaplar: [
+                "Adalet Bakanlığına",
+                "Değerlendirme Kuruluna",
+                "Mahkeme Genel Sekreterine",
+                "Özlük işleri ile ilgili birimler"
+            ],
+            aciklama: "Yüksek mahkemelerin daire başkanları ve üyeleri mal bildirimlerini ilgili Mahkeme Başkanına verirler."
+        },
+        {
+            id: "mb_11",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, noterler mal bildirimi için hangi mercie başvurmalıdır?",
+            dogruCevap: "Adalet Bakanlığı",
+            yanlisCevaplar: [
+                "İçişleri Bakanlığı",
+                "Hazine ve Maliye Bakanlığı",
+                "İl Özel İdaresi",
+                "Adalet Bakanlığı ve İçişleri Bakanlığı ortaklaşa"
+            ],
+            aciklama: "Noterler mal bildirimlerini Adalet Bakanlığına sunarlar."
+        },
+        {
+            id: "mb_12",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, diğer kurum ve kuruluşların memur ve hizmetlileri mal bildirimlerini kime verir?",
+            dogruCevap: "Atamaya yetkili makama",
+            yanlisCevaplar: [
+                "Özlükişleri birimine",
+                "Hazine ve Maliye Bakanlığına",
+                "Kurumun İnsan Kaynakları Dairesine",
+                "Personel şefine"
+            ],
+            aciklama: "Diğer kurum ve kuruluşların memur ve hizmetlileri mal bildirimlerini atamaya yetkili makama (veya bu makamın yetkili kıldığı mercie/özlük birimine) verirler."
+        },
+        {
+            id: "mb_13",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, Türk Hava Kurumu ile Türkiye Kızılay Derneğinde görev alanlar mal bildirimini hangi mercie vermekle yükümlüdür?",
+            dogruCevap: "İçişleri Bakanlığı",
+            yanlisCevaplar: [
+                "Kurum ve Dernek Genel Başkanlığı",
+                "Kurum ve Dernek Yönetim Kurulu",
+                "Kurum ve Dernek Personel İşleri",
+                "Hazine ve Maliye Bakanlığı"
+            ],
+            aciklama: "THK ve Kızılay Genel Yönetim Kurulu ile Merkez Denetleme Kurulu üyeleri için bildirim mercii İçişleri Bakanlığıdır."
+        },
+        {
+            id: "mb_14",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kamu kurumu niteliğindeki meslek kuruluşlarında görevli olanlar ve bu kuruluşların yönetim ve denetim kurulu üyeleri mal bildirimlerini kime verir?",
+            dogruCevap: "Kurum başkanlığı ve ilgili bakanlıklar",
+            yanlisCevaplar: [
+                "Sadece kurum başkanlığı",
+                "Sadece ilgili bakanlıklar",
+                "Kurumun İnsan Kaynakları Birimi",
+                "Değerlendirme Kurulu"
+            ],
+            aciklama: "Kamu kurumu niteliğindeki meslek kuruluşlarında görevliler ve organ üyeleri kendi kurum başkanlıklarına veya ilgili bakanlığa bildiride bulunurlar."
+        },
+        {
+            id: "mb_15",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, görevlerinden ayrılanlar mal bildirimlerini hangi makam veya merciye vermek zorundadır?",
+            dogruCevap: "Ayrıldıkları görev yaptıkları makam veya merci",
+            yanlisCevaplar: [
+                "Görev yaptıkları kurumun insan kaynakları birimi",
+                "Yeni görev yaptıkları kurumun üst yönetimi",
+                "Görevden ayrılmalarını takip eden 30 gün içinde Bakanlık",
+                "Görev yaptıkları kurumun hukuk işleri birimi"
+            ],
+            aciklama: "Görevinden ayrılan kişiler en son ayrıldıkları makam veya mercie mal bildirimi vermekle yükümlüdür."
+        },
+        {
+            id: "mb_16",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, siyasi parti genel başkanları mal bildirimlerini hangi makam veya merciye vermek zorundadır?",
+            dogruCevap: "Yargıtay Cumhuriyet Başsavcılığına",
+            yanlisCevaplar: [
+                "Anayasa Mahkemesine",
+                "TBMM Başkanlığına",
+                "Adalet Bakanlığına",
+                "Cumhurbaşkanlığına"
+            ],
+            aciklama: "Siyasi parti genel başkanları mal bildirimlerini Yargıtay Cumhuriyet Başsavcılığına sunarlar."
+        },
+        {
+            id: "mb_17",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kooperatifler ve birliklerinin başkanları, yönetim kurulu üyeleri ve genel müdürleri mal bildirimlerini kime verir?",
+            dogruCevap: "Kooperatiflerin ve birliklerinin denetimlerini yapan kuruluşlara",
+            yanlisCevaplar: [
+                "Hazine ve Maliye Bakanlığına",
+                "Kooperatiflerin genel kuruluna",
+                "Bakanlığa",
+                "İl Ticaret Müdürlüğüne"
+            ],
+            aciklama: "Kooperatifler ve birliklerinin yönetim kurulu üyeleri ile genel müdürleri, denetimlerini yapmakla görevli kurum veya kuruluşlara bildirimde bulunurlar."
+        },
+        {
+            id: "mb_18",
+            soruMetni: "“Türk Hava Kurumunun, Türkiye Kızılay Derneğinin ve kamu yararına sayılan derneklerin genel yönetim ve merkez denetleme kurulu üyeleri için mal bildirim mercisi ________ ; bunların şube başkanları için mal bildirim mercisi ________ dir.” Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yukarıdaki bilgide boş bırakılan yerlere sırasıyla aşağıdakilerden hangileri getirilmelidir?",
+            dogruCevap: "İçişleri Bakanlığı - Bulundukları il valilikleri",
+            yanlisCevaplar: [
+                "Cumhurbaşkanlığı - Valilikler",
+                "İçişleri Bakanlığı - İlçe emniyet müdürlükleri",
+                "Adalet Bakanlığı - İl belediyeleri",
+                "Hazine ve Maliye Bakanlığı - Kaymakamlıklar"
+            ],
+            aciklama: "Genel yönetim/denetim kurulu üyeleri için mercii İçişleri Bakanlığı, şube başkanları için ise bulundukları il valiliğidir."
+        },
+        {
+            id: "mb_19",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yeminli mali müşavirler mal bildirimlerini aşağıdakilerden nereye yapar?",
+            dogruCevap: "Hazine ve Maliye Bakanlığı",
+            yanlisCevaplar: [
+                "Sanayi ve Teknoloji Bakanlığı",
+                "Adalet Bakanlığı",
+                "İçişleri Bakanlığı",
+                "Çalışma ve Sosyal Güvenlik Bakanlığı"
+            ],
+            aciklama: "Yeminli mali müşavirler mal bildirimlerini Hazine ve Maliye Bakanlığına yaparlar."
+        },
+        {
+            id: "mb_20",
+            soruMetni: "\"İl genel meclisi üyeleri için mal bildirim mercisi ________ , belediye meclisi üyeleri için ________ , belediye başkanları için ise ________ dir.\" Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yukarıdaki bilgide boş bırakılan yerlere sırasıyla aşağıdakilerden hangileri getirilmelidir?",
+            dogruCevap: "İlgili valilikler — İlgili belediye başkanlıkları — İçişleri Bakanlığı",
+            yanlisCevaplar: [
+                "İçişleri Bakanlığı — İlgili valilikler — Belediye meclisi",
+                "İlgili belediye başkanlıkları — İçişleri Bakanlığı — İlgili valilikler",
+                "Belediye meclisi — İlgili valilikler — İçişleri Bakanlığı",
+                "İl genel meclisi — Belediye başkanlığı — Hazine ve Maliye Bakanlığı"
+            ],
+            aciklama: "İl genel meclisi üyeleri valiliğe, belediye meclis üyeleri belediye başkanlığına, belediye başkanları ise İçişleri Bakanlığına bildiride bulunur."
+        },
+        {
+            id: "mb_21",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, mal bildirimi verecek son mercilerin mal bildirimlerini verecekleri makam veya merci aşağıdakilerden hangisidir?",
+            dogruCevap: "Kendi kuruluşlarının özlük işleri ile ilgili makam veya merci",
+            yanlisCevaplar: [
+                "İlgili Bakanlıklar",
+                "Bakanlıklararası Koordinasyon Kurulu",
+                "Cumhurbaşkanlığı İletişim Başkanlığı",
+                "Yargıtay Cumhuriyet Başsavcılığı"
+            ],
+            aciklama: "Diğer mercilerin bildirimlerini kabul etmekle yetkili son makamlar (örneğin bakanlar), kendi bildirimlerini yetkili özlük işleri birimine teslim ederler."
+        },
+        {
+            id: "mb_22",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, vakıfların idare organlarında görev alanlar mal bildirimlerini hangi mercie verirler?",
+            dogruCevap: "Vakıflar Genel Müdürlüğü",
+            yanlisCevaplar: [
+                "Kendi kuruluşlarının özlük işleri ile ilgili makam veya merci",
+                "Hazine ve Maliye Bakanlığı",
+                "Kamu kurumlarının personel birimleri",
+                "Türkiye Büyük Millet Meclisi Başkanlığı"
+            ],
+            aciklama: "Vakıfların idare organlarında görev alanlar bildirimlerini Vakıflar Genel Müdürlüğüne verirler."
+        },
+        {
+            id: "mb_23",
+            soruMetni: "I. Gazete sahibi gerçek kişiler\nII. Gazete sahibi şirketlerin yönetim ve denetim kurulu üyeleri\nIII. Sorumlu müdürleri\nIV. Başyazarları ve fıkra yazarları\nMal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yukarıdakilerden hangileri mal bildirimini bulundukları yer en büyük mülki amirliğine vermek zorundadır?",
+            dogruCevap: "I, II, III ve IV",
+            yanlisCevaplar: [
+                "I ve II",
+                "I, II ve III",
+                "C) I, III ve IV",
+                "II, III ve IV"
+            ],
+            aciklama: "Gazete sahibi gerçek kişiler, şirketlerin yönetim/denetim üyeleri, sorumlu müdürleri, başyazarlar ve fıkra yazarları bulundukları yerin en büyük mülki amirliğine bildirim verirler."
+        },
+        {
+            id: "mb_24",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, mal bildirimlerinin verilmesini izlemek için aşağıdakilerden hangisi görevlendirilir?",
+            dogruCevap: "Birim veya personel",
+            yanlisCevaplar: [
+                "Komisyon",
+                "Denetim kurulu",
+                "Hukuk müşaviri",
+                "Yönetim kurulu üyeleri"
+            ],
+            aciklama: "Kurumlar, mal bildirimlerinin zamanında verilmesini izlemek ve kontrol etmekle görevli birim veya personel görevlendirir."
+        },
+        {
+            id: "mb_25",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, Genel İdare Hizmetleri sınıfında birinci derecenin birinci kademesindeki şube müdürüne ödenecek net aylık miktarın belirlenmesiyle ilgili aşağıdakilerden hangisi doğrudur?",
+            dogruCevap: "Net aylık miktarı, aylıklara uygulanan katsayının belirlenmesini müteakip Hazine ve Maliye Bakanlığı tarafından tespit ve ilan edilir.",
+            yanlisCevaplar: [
+                "Net aylık miktarı, sadece temel ücret üzerinden Hazine ve Maliye Bakanlığı tarafından belirlenir.",
+                "Net aylık miktar, zam ve tazminatlar hariç olarak belirlenir ve ilan edilir.",
+                "Zam ve tazminatlar dahil net aylık miktarının belirlenmesi sadece personelin bağlı bulunduğu bakanlık tarafından yapılır.",
+                "Net aylık miktarını sadece ilgili kurumun amiri belirleyip ilan eder."
+            ],
+            aciklama: "Hazine ve Maliye Bakanlığı, memur katsayılarının belirlenmesini müteakip bu net aylık tutarını tespit ve ilan eder."
+        },
+        {
+            id: "mb_26",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, aşağıdakilerden hangisi mal bildirimine konu olmayan unsurlardan biridir?",
+            dogruCevap: "Sosyal güvenlik primleri",
+            yanlisCevaplar: [
+                "Kendilerine aylık ödenenlerin net aylık tutarının beş katından fazla olan para ve para hükmündeki kıymetli kağıtları",
+                "Taşınmaz mallar (arsa ve yapı kooperatif hisseleri dahil)",
+                "Altın ve mücevherat",
+                "Alacaklar ve borçlar"
+            ],
+            aciklama: "Sosyal güvenlik primleri kişisel bir mal varlığı veya beyan edilecek alacak/borç kapsamında yer almaz."
+        },
+        {
+            id: "mb_27",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, mal bildirimleri, seçimle gelinen görevlerde en geç ne zaman verilmelidir?",
+            dogruCevap: "Seçimin kesinleşme tarihini izleyen iki ay içinde",
+            yanlisCevaplar: [
+                "Seçimin yapıldığı gün",
+                "Seçim sonuçlarının açıklandığı gün",
+                "Göreve başladıktan sonraki bir ay içinde",
+                "Seçimden sonraki üç ay içinde"
+            ],
+            aciklama: "Seçimle gelinen görevlerde bildirimin kesinleşme tarihini izleyen 2 ay içinde verilmesi zorunludur."
+        },
+        {
+            id: "mb_28",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yönetim ve denetim kurulları ile komisyon üyeliklerine seçilen veya atananların mal bildirimi ne zaman verilmelidir?",
+            dogruCevap: "Göreve başlama tarihini izleyen bir ay içinde",
+            yanlisCevaplar: [
+                "Göreve başlamadan önce",
+                "Göreve başlama tarihini izleyen 15 gün içinde",
+                "Göreve başlama tarihinden üç ay sonra",
+                "Atama tarihinden itibaren 10 gün içinde"
+            ],
+            aciklama: "Atamalarda ve yönetim/denetim kurulu üyeliklerine seçilmelerde göreve başlama tarihini izleyen 1 ay içinde verilmesi gerekir."
+        },
+        {
+            id: "mb_29",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, görevi sona erenler, mal bildirimini ne zaman vermek zorundadır?",
+            dogruCevap: "Ayrılma tarihini izleyen bir ay içinde",
+            yanlisCevaplar: [
+                "Görevden ayrılmadan önce",
+                "Ayrılma tarihini izleyen üç ay içinde",
+                "Görevden ayrıldıktan sonra herhangi bir zamanda",
+                "Görev süresinin bitiminde"
+            ],
+            aciklama: "Görevin sona ermesi halinde ayrılma tarihini takip eden 1 ay içinde bildirim verilir."
+        },
+        {
+            id: "mb_30",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, aşağıdakilerden hangisi, gazete sahibi gerçek kişiler ile gazete sahibi şirketlerin yönetim ve denetim kurulu üyeleri için mal bildiriminin verilme zamanını doğru belirtir?",
+            dogruCevap: "Faaliyete geçme tarihini izleyen bir ay içinde",
+            yanlisCevaplar: [
+                "Göreve başlamadan önce",
+                "Faaliyete geçme tarihinden üç ay sonra",
+                "Faaliyete geçme tarihinden itibaren 10 gün içinde",
+                "Göreve başlama tarihini izleyen altı ay içinde"
+            ],
+            aciklama: "Gazete sahipleri ve yöneticileri faaliyete geçme tarihini takip eden 1 ay içinde mal bildirimi verirler."
+        },
+        {
+            id: "mb_31",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, eşleri, velayeti altındaki çocukları ve kendilerinin şahsi mal varlıklarında önemli bir değişiklik olduğunda, mal bildiriminde bulunmak için hangi süre içinde ek mal bildirimi verilmelidir?",
+            dogruCevap: "Değişikliği izleyen bir ay içinde",
+            yanlisCevaplar: [
+                "Değişikliği izleyen 15 gün içinde",
+                "Değişikliği izleyen üç ay içinde",
+                "Değişiklikten sonra herhangi bir zamanda",
+                "Yıl sonunda"
+            ],
+            aciklama: "Net aylık tutarının 5 katını aşan önemli mal varlığı değişikliklerinde durumun gerçekleştiği tarihi takip eden 1 ay içinde ek bildirim verilir."
+        },
+        {
+            id: "mb_32",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, noterler ve görevlere devam edenler, sonu (0) ve (5) ile biten yıllarda mal bildirimlerini en geç ne zamana kadar yenilemek zorundadırlar?",
+            dogruCevap: "Şubat ayı sonuna kadar",
+            yanlisCevaplar: [
+                "Ocak ayı sonuna kadar",
+                "Mart ayı sonuna kadar",
+                "Nisan ayı ortasına kadar",
+                "Yıl sonuna kadar"
+            ],
+            aciklama: "Genel beyan dönemlerinde (sonu 0 ve 5 ile biten yıllarda) bildirimler en geç Şubat ayı sonuna kadar yenilenir."
+        },
+        {
+            id: "mb_33",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, Mal Bildirimi Formu nasıl doldurulur?",
+            dogruCevap: "Tek nüsha olarak doldurulur ve tarih belirtilerek imzalanır",
+            yanlisCevaplar: [
+                "İki nüsha olarak ve imzasız doldurulur",
+                "Elektronik ortamda doldurulur ve imzalanmaz",
+                "Üç nüsha olarak doldurulur, imza zorunlu değildir",
+                "Sadece tarihi belirtilerek doldurulur, imza gerekmez"
+            ],
+            aciklama: "Mal Bildirimi Formu tek nüsha olarak eksiksiz doldurulur, tarih atılır ve imzalanır."
+        },
+        {
+            id: "mb_34",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, aşağıdakilerden hangisi belirtilen kamu görevlilerinin teslim etmek zorunda olduğu hediyeler için doğru bir ifadedir?",
+            dogruCevap: "Değeri ten (10) aylık net asgari ücret toplamını aşan hediyeler",
+            yanlisCevaplar: [
+                "Değeri beş aylık net asgari ücret toplamını aşan hediyeler",
+                "Değeri bir aylık net asgari ücret toplamını aşan hediyeler",
+                "Değeri üç aylık net asgari ücret toplamını aşan hediyeler",
+                "Değeri iki aylık net asgari ücret toplamını aşan hediyeler"
+            ],
+            aciklama: "Yabancı devlet veya uluslararası kuruluşlardan alınan ve değeri 10 aylık net asgari ücreti aşan hediye veya hibeler teslim edilmek zorundadır."
+        },
+        {
+            id: "mb_35",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, belirtilen kamu görevlileri, yabancı devletlerden veya milletlerarası kuruluşlardan aldıkları hediyeleri ne kadar sürede teslim etmek zorundadırlar?",
+            dogruCevap: "Aldıktan sonra bir ay içinde",
+            yanlisCevaplar: [
+                "Aldıktan sonra üç ay içinde",
+                "Aldıktan sonra 6 ay içinde",
+                "Aldıktan sonra 10 gün içinde",
+                "Yıl sonunda"
+            ],
+            aciklama: "Söz konusu hediyeler alındığı tarihten itibaren 1 ay içinde kendi kurumlarına teslim edilir."
+        },
+        {
+            id: "mb_36",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, aşağıdakilerden hangisi, belirtilen kamu görevlilerinin hediyeleri teslim etme zorunluluğu kapsamında değildir?",
+            dogruCevap: "Yabancı devlet adamları ve milletlerarası kuruluş temsilcileri tarafından verilen imzalı hatıra fotoğraflarının çerçeveleri",
+            yanlisCevaplar: [
+                "Milletlerarası protokol uyarınca alınan hediyeler",
+                "Nezaket kaideleri uyarınca alınan hediyeler",
+                "Mücamele kaideleri uyarınca alınan hediyeler",
+                "Milletlerarası hukuk tüzel kişiliklerinden alınan hediyeler"
+            ],
+            aciklama: "İmzalı hatıra fotoğraflarının çerçeveleri teslim zorunluluğu kapsamı dışında tutulmuştur."
+        },
+        {
+            id: "mb_37",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kamu görevlileri veya eşleri tarafından alınan hediyelerin değer takdiri yapılması süreciyle ilgili doğru bir ifadedir?",
+            dogruCevap: "Hediyenin değerinin on aylık net asgari ücret toplamını aştığının belirlenmesi hâlinde, eşya değer takdiri için kurum aracılığıyla takdir komisyonu başkanlığına gönderilir.",
+            yanlisCevaplar: [
+                "Yurtiçinde alınan hediyeler için takdir komisyonuna bireysel başvuru yapılır",
+                "Hediye, doğrudan Dışişleri Bakanlığı'na teslim edilir",
+                "Hediye yurtdışında alınmışsa, ülkeye giriş tarihinden 30 gün sonra bildirilmelidir",
+                "Her hediye için otomatik olarak yasal işlem başlatılır"
+            ],
+            aciklama: "Eşyanın değerinin tespiti için ilgili kurum aracılığıyla takdir komisyonuna sevk edilerek kıymet takdiri yaptırılır."
+        },
+        {
+            id: "mb_38",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kamu görevlileri veya eşleri, yurt dışında aldıkları ve değerinin on aylık net asgari ücret toplamını aştığını belirledikleri hediye veya hibe eşyasını hangi sürede ve nereye göndermekle yükümlüdür?",
+            dogruCevap: "Yurda dönüş tarihinden itibaren 10 gün içinde il defterdarlığa gönderir",
+            yanlisCevaplar: [
+                "Hediyeyi aldıktan hemen sonra Cumhurbaşkanlığı'na bildirir",
+                "Yurtdışında kaldıkları sürede konsolosluğa teslim eder",
+                "Yurda döndükten sonraki bir ay içinde valiliğe teslim eder",
+                "15 gün içinde kaymakamlığa gönderir"
+            ],
+            aciklama: "Yurtdışında alınan ve limiti aşan hediyeler yurda dönüş tarihinden itibaren 10 gün içinde Defterdarlık Takdir Komisyonuna iletilmek üzere teslim edilir."
+        },
+        {
+            id: "mb_39",
+            soruMetni: "“Hediye veya hibe niteliğindeki bu eşyanın gerçek değerinin takdiri ile net asgari ücretin ________ aylık toplamını aşıp aşmadığı, ________ tarafından en geç ________ içinde tespit olunarak ilgiliye ve bağlı bulunduğu kuruma bildirilir.” Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yukarıdaki bilgide boş bırakılan yerlere sırasıyla aşağıdakilerden hangileri getirilmelidir?",
+            dogruCevap: "On — takdir komisyonunca — on gün",
+            yanlisCevaplar: [
+                "On — etik kurulunca — bir hafta",
+                "beş — değerlendirme kurulunca — on beş gün",
+                "Üç — takdir kurulunca — üç gün",
+                "beş — takdir komisyonunca — on gün"
+            ],
+            aciklama: "Eşyanın değeri 10 aylık tutarı aşıp aşmadığı takdir komisyonunca en geç 10 gün içinde tespit olunur."
+        },
+        {
+            id: "mb_40",
+            soruMetni: "“Kıymet takdirini müteakip, takdir komisyonu tarafından ilgilisine geri verilen hediye veya hibe niteliğindeki eşyadan değeri net asgari ücretin ________ toplamını aşanlar, ilgilisi tarafından en geç ________ içinde kendi kurumlarına verilir.” Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yukarıdaki bilgide boş bırakılan yerlere sırasıyla aşağıdakilerden hangileri getirilmelidir?",
+            dogruCevap: "On aylık — ten (10) gün / bir ay",
+            yanlisCevaplar: [
+                "On günlük — beş gün",
+                "On aylık — on gün",
+                "altı aylık — on beş gün",
+                "beş aylık — bir hafta"
+            ],
+            aciklama: "Kıymet takdiri sonucu değeri 10 aylık net asgari ücreti aştığı kesinleşen hediyeler en geç 10 gün içinde kuruma teslim edilir."
+        },
+        {
+            id: "mb_41",
+            soruMetni: "I. Devlet Arşivleri'ne gönderilir\nII. Sergilenmek veya muhafaza edilmek suretiyle değerlendirilir\nIII. İlgili başka bir kuruma tevdi edilir\nIV. Yurt dışına geri gönderilir\nMal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, kamu görevlilerinin teslim ettiği değerli hediyeler, ilgili kurum tarafından nasıl değerlendirilir?",
+            dogruCevap: "II ve III",
+            yanlisCevaplar: [
+                "I ve II",
+                "III ve IV",
+                "I ve III",
+                "I ve IV"
+            ],
+            aciklama: "Teslim edilen hediyeler kurumca sergilenmek/muhafaza edilmek suretiyle değerlendirilir veya diğer bir kamu kurumuna verilebilir."
+        },
+        {
+            id: "mb_42",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, mal bildirimleri, aşağıdakilerden hangisinde saklanır?",
+            dogruCevap: "İlgililerin varsa sicil, yoksa özel dosyalarında",
+            yanlisCevaplar: [
+                "Noterler Birliği veri tabanında",
+                "Hazine ve Maliye Bakanlığı'nda genel arşivde",
+                "TBMM arşivinde",
+                "Devlet Arşivleri'nde"
+            ],
+            aciklama: "Verilen mal bildirimleri gizli tutulur ve ilgililerin sicil veya özel dosyalarında saklanır."
+        },
+        {
+            id: "mb_43",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, özel kanunlarında farklı bir hüküm olsa bile soruşturma ve kovuşturmaya yetkili kişi veya merciler tarafından istenen bilgiler hakkında aşağıdakilerden hangisi doğrudur?",
+            dogruCevap: "Bilgiler eksiksiz olarak verilmek zorundadır",
+            yanlisCevaplar: [
+                "Bilgi verme yükümlülüğü yoktur",
+                "Bilgiler sadece mahkeme kararıyla verilebilir",
+                "Bilgiler sadece kamu kurumlarına verilebilir",
+                "Bilgiler gizli tutulur ve verilmez"
+            ],
+            aciklama: "Soruşturma ve kovuşturmaya yetkili makamlarca istenen bildirim içerikleri gizlilik gerekçesi gösterilmeksizin eksiksiz verilmek zorundadır."
+        },
+        {
+            id: "mb_44",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, mal bildiriminde bulunmayan kişilere yapılacak ihtar nasıl tebliğ edilir?",
+            dogruCevap: "Tebligat Kanunu hükümlerine göre yazılı olarak",
+            yanlisCevaplar: [
+                "Elektronik posta ile",
+                "İlgilinin kurumundaki yöneticisine teslim edilerek",
+                "Görevli memur tarafından elden teslim edilerek",
+                "SMS mesajı ile bildirilerek"
+            ],
+            aciklama: "Süresinde bildirimde bulunmayanlara Tebligat Kanunu hükümlerine göre yazılı ihtar yapılır."
+        },
+        {
+            id: "mb_45",
+            soruMetni: "“İhtarın kendisine tebliğinden itibaren ________ içinde bildirimde bulunmayanlar hakkında gerekli işlem yapılmak üzere yetkili ________ SUÇ duyurusunda bulunulur.\" Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yukarıdaki bilgide boş bırakılan yerlere sırasıyla aşağıdakilerden hangileri getirilmelidir?",
+            dogruCevap: "Otuz gün / Cumhuriyet Başsavcılığına",
+            yanlisCevaplar: [
+                "On beş gün / Asliye Ceza Mahkemesine",
+                "bir ay / Cumhuriyet Başsavcılığına",
+                "Üç ay / Vergi Dairesine",
+                "On gün / Sulh Hukuk Mahkemesine"
+            ],
+            aciklama: "İhtarın tebliğinden itibaren 30 gün içinde bildirimde bulunmayanlar hakkında Cumhuriyet Başsavcılığına suç duyurusunda bulunulur."
+        },
+        {
+            id: "mb_46",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, soruşturma süresi içinde mal bildiriminde bulunmayanlar hakkında yetkili Cumhuriyet başsavcısına suç duyurusunda bulunan kişiler kimlerdir?",
+            dogruCevap: "Müfettiş ve muhakkikler",
+            yanlisCevaplar: [
+                "Hakimler ve savcılar",
+                "Belediye başkanları",
+                "Mali müşavirler",
+                "Tapu müdürleri"
+            ],
+            aciklama: "Soruşturma esnasında bildirim verilmediğini tespit eden müfettiş ve muhakkikler de durumu doğrudan Cumhuriyet Başsavcılığına bildirmekle yükümlüdür."
+        },
+        {
+            id: "mb_47",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yapılan karşılaştırma sonucunda gerçeğe aykırı bildirimde bulundukları veya haksız mal edindikleri, kaçırdıkları ya da gizledikleri anlaşılanlar hakkında yetkili merciler ne yapar?",
+            dogruCevap: "Cumhuriyet başsavcılıklarına suç duyurusunda bulunurlar",
+            yanlisCevaplar: [
+                "İdari para cezası uygular",
+                "Yalnızca sözlü uyarı yaparlar",
+                "Mal bildirimi formunu kendileri doldurur",
+                "Yalnızca mal bildirim formunu tekrar doldurtmak"
+            ],
+            aciklama: "Gerçeğe aykırı beyan, haksız mal edinme veya mal kaçırma durumlarında yetkili merciler derhal Cumhuriyet Başsavcılığına suç duyurusunda bulunur."
+        },
+        {
+            id: "mb_48",
+            soruMetni: "Mal Bildiriminde Bulunulması Hakkında Yönetmeliği'ne göre, yetkili mercilerin Cumhuriyet başsavcılığına suç duyurusunda bulunma sebebi aşağıdakilerden hangisidir?",
+            dogruCevap: "Yapılan incelemede mal bildiriminde gerçeğe aykırılık tespit edilmesi",
+            yanlisCevaplar: [
+                "Mal bildiriminin eksik doldurulması",
+                "Mal bildirimini zamanında vermemesi",
+                "Mal bildirim formunun kaybolması",
+                "Mal bildirimi yapmak istememeleri"
+            ],
+            aciklama: "Gerçeğe aykırı bildirimde bulunulduğunun veya mal kaçırıldığının/gizlendiğinin tespiti suç duyurusu sebebidir."
+        }
+    ] }
+        ];
+
+        let activeQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let wrongCountScore = 0;
+        let selectedCourseId = null;
+        let selectedQuestionCount = 5;
+        
+        let favorites = JSON.parse(localStorage.getItem("gys_favorites")) || [];
+        let wrongAnswers = JSON.parse(localStorage.getItem("gys_wrongs")) || [];
+
+        let currentShuffledOptions = [];
+        let correctAnswerText = "";
+
+        function updateGlobalCounts() {
+            document.getElementById("favCount").innerText = favorites.length;
+            document.getElementById("wrongCount").innerText = wrongAnswers.length;
+            localStorage.setItem("gys_favorites", JSON.stringify(favorites));
+            localStorage.setItem("gys_wrongs", JSON.stringify(wrongAnswers));
+        }
+
+        function initHome() {
+            updateGlobalCounts();
+            const courseList = document.getElementById("courseList");
+            courseList.innerHTML = "";
+
+            veriTabani.forEach(ders => {
+                const card = document.createElement("div");
+                card.className = "bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer flex justify-between items-center";
+                card.innerHTML = `
+                    <div>
+                        <h3 class="font-bold text-slate-700 text-xs">${ders.dersAdi}</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Sınav Soru: ${ders.sinavSoruSayisi} | Havuz: ${ders.sorular.length}</p>
+                    </div>
+                    <span class="bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg font-semibold text-xs whitespace-nowrap ml-2">Seç ➔</span>
+                `;
+                card.onclick = () => openCourseDetail(ders.id);
+                courseList.appendChild(card);
+            });
+
+            document.getElementById("homeScreen").classList.remove("hidden");
+            document.getElementById("courseDetailScreen").classList.add("hidden");
+            document.getElementById("quizContainer").classList.add("hidden");
+            document.getElementById("resultContainer").classList.add("hidden");
+        }
+
+        function openCourseDetail(courseId) {
+            const ders = veriTabani.find(d => d.id === courseId);
+            if(!ders || ders.sorular.length === 0) {
+                alert("Bu derse henüz soru eklenmemiş! Soru eklediğinizde açılacaktır.");
+                return;
+            }
+            selectedCourseId = courseId;
+            document.getElementById("detailCourseTitle").innerText = ders.dersAdi;
+
+            document.getElementById("courseFavCount").innerText = favorites.filter(q => q.id.startsWith("dilekce_") || q.id.startsWith("tr_")).length; // Filtre esnekliği
+            document.getElementById("courseWrongCount").innerText = wrongAnswers.filter(q => q.id.startsWith("dilekce_") || q.id.startsWith("tr_")).length;
+
+            document.getElementById("homeScreen").classList.add("hidden");
+            document.getElementById("courseDetailScreen").classList.remove("hidden");
+        }
+
+        function setQuestionCount(count) {
+            selectedQuestionCount = count;
+            ['5', '10', '20', 'All'].forEach(c => {
+                const btn = document.getElementById(`btnCount${c}`);
+                if(btn) {
+                    btn.className = "flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition";
+                }
+            });
+            const activeBtn = document.getElementById(`btnCount${count === 'all' ? 'All' : count}`);
+            if(activeBtn) {
+                activeBtn.className = "flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-200 transition";
+            }
+        }
+
+        function startSelectedCourseQuiz() {
+            const ders = veriTabani.find(d => d.id === selectedCourseId);
+            let pool = [...ders.sorular].sort(() => Math.random() - 0.5);
+
+            if(selectedQuestionCount !== 'all' && pool.length > selectedQuestionCount) {
+                pool = pool.slice(0, selectedQuestionCount);
+            }
+
+            activeQuestions = pool;
+            beginQuiz();
+        }
+
+        function startDenemeSinavi() {
+            let tumSorular = [];
+            veriTabani.forEach(ders => { tumSorular.push(...ders.sorular); });
+            if(tumSorular.length === 0) { alert("Sistemde henüz hiç soru bulunmuyor!"); return; }
+            
+            activeQuestions = tumSorular.sort(() => Math.random() - 0.5);
+            beginQuiz();
+        }
+
+        function openGlobalFavorites() {
+            if(favorites.length === 0) { alert("Favori soru yok!"); return; }
+            activeQuestions = [...favorites];
+            beginQuiz();
+        }
+
+        function openGlobalWrongs() {
+            if(wrongAnswers.length === 0) { alert("Yanlış yapılan soru yok!"); return; }
+            activeQuestions = [...wrongAnswers];
+            beginQuiz();
+        }
+
+        function openCourseFavorites() {
+            const dersFavs = favorites.filter(q => q.id.startsWith("dilekce_"));
+            if(dersFavs.length === 0) { alert("Bu derse ait favori soru yok!"); return; }
+            activeQuestions = dersFavs;
+            beginQuiz();
+        }
+
+        function openCourseWrongs() {
+            const dersWrongs = wrongAnswers.filter(q => q.id.startsWith("dilekce_"));
+            if(dersWrongs.length === 0) { alert("Bu derse ait yanlış yapılan soru yok!"); return; }
+            activeQuestions = dersWrongs;
+            beginQuiz();
+        }
+
+        function beginQuiz() {
+            currentIndex = 0;
+            score = 0;
+            wrongCountScore = 0;
+            document.getElementById("homeScreen").classList.add("hidden");
+            document.getElementById("courseDetailScreen").classList.add("hidden");
+            document.getElementById("quizContainer").classList.remove("hidden");
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = activeQuestions[currentIndex];
+            document.getElementById("questionNumber").innerText = `Soru ${currentIndex + 1} / ${activeQuestions.length}`;
+            document.getElementById("questionText").innerText = q.soruMetni;
+            correctAnswerText = q.dogruCevap;
+
+            let allOptions = [q.dogruCevap, ...q.yanlisCevaplar];
+            currentShuffledOptions = allOptions.sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById("optionsContainer");
+            optionsContainer.innerHTML = "";
+
+            const harfler = ["A", "B", "C", "D", "E"];
+            currentShuffledOptions.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "w-full text-left p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition font-medium flex items-center justify-between text-xs";
+                btn.innerHTML = `<span class="bg-slate-100 w-6 h-6 rounded-lg flex items-center justify-center font-bold text-slate-600 mr-3 shrink-0">${harfler[index]}</span> <span class="flex-1">${option}</span>`;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById("explanationContainer").classList.add("hidden");
+            document.getElementById("nextBtn").classList.add("hidden");
+            updateFavButtonUI();
+        }
+
+        function checkAnswer(selectedOption, selectedBtn) {
+            const allBtns = document.getElementById("optionsContainer").getElementsByTagName("button");
+            const currentQ = activeQuestions[currentIndex];
+            
+            for (let btn of allBtns) {
+                btn.disabled = true;
+                if (btn.innerText.includes(correctAnswerText)) {
+                    btn.classList.add("bg-green-100", "border-green-500", "text-green-800");
+                }
+            }
+
+            if (selectedOption === correctAnswerText) {
+                score++;
+                wrongAnswers = wrongAnswers.filter(item => item.id !== currentQ.id);
+            } else {
+                wrongCountScore++;
+                selectedBtn.classList.add("bg-red-100", "border-red-500", "text-red-800");
+                if(!wrongAnswers.some(item => item.id === currentQ.id)) { wrongAnswers.push(currentQ); }
+            }
+
+            updateGlobalCounts();
+
+            if(currentQ.aciklama) {
+                document.getElementById("explanationText").innerText = currentQ.aciklama;
+                document.getElementById("explanationContainer").classList.remove("hidden");
+            }
+
+            document.getElementById("nextBtn").classList.remove("hidden");
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < activeQuestions.length) {
+                loadQuestion();
+            } else {
+                document.getElementById("quizContainer").classList.add("hidden");
+                document.getElementById("resultContainer").classList.remove("hidden");
+                
+                // Karne İstatistikleri
+                document.getElementById("resTrue").innerText = score;
+                document.getElementById("resFalse").innerText = wrongCountScore;
+                const successRate = Math.round((score / activeQuestions.length) * 100);
+                document.getElementById("resSuccess").innerText = `%${successRate}`;
+            }
+        }
+
+        function toggleFavorite() {
+            const q = activeQuestions[currentIndex];
+            const exists = favorites.some(item => item.id === q.id);
+            if (exists) {
+                favorites = favorites.filter(item => item.id !== q.id);
+            } else {
+                favorites.push(q);
+            }
+            updateGlobalCounts();
+            updateFavButtonUI();
+        }
+
+        function updateFavButtonUI() {
+            const q = activeQuestions[currentIndex];
+            const favBtn = document.getElementById("favBtn");
+            const isFav = favorites.some(item => item.id === q.id);
+            if (isFav) {
+                favBtn.classList.remove("text-gray-300");
+                favBtn.classList.add("text-yellow-500");
+            } else {
+                favBtn.classList.add("text-gray-300");
+                favBtn.classList.remove("text-yellow-500");
+            }
+        }
+
+        function goHome() {
+            initHome();
+        }
+
+        initHome();
+    </script>
+</body>
+</html>

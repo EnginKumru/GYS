@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soru Bankası</title>
+    <title>Gelişmiş Soru Bankası</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 flex flex-col min-h-screen">
@@ -24,7 +24,7 @@
         <div id="homeScreen" class="space-y-4 my-4">
             <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-5 rounded-2xl shadow-md text-white text-center cursor-pointer hover:opacity-95 transition" onclick="startDenemeSinavi()">
                 <h2 class="text-xl font-bold">🎯 Genel Deneme Sınavı</h2>
-                <p class="text-xs mt-1 text-orange-100">Havuzdaki Sorularla Simülasyon</p>
+                <p class="text-xs mt-1 text-orange-100">Havuzdaki Sorularla Deneme</p>
             </div>
 
             <h2 class="text-base font-bold text-slate-700 mt-4 mb-2">Ders Seçerek Çalış (21 Kalem):</h2>
@@ -85,6 +85,7 @@
             </div>
 
             <!-- Sonraki Soru Butonu -->
+            <button id="skipBtn" onclick="skipQuestion()" class="mt-4 w-full bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold hover:bg-slate-200 transition text-xs border border-slate-200">⏭️ Soruyu Atla (sona ekle)</button>
             <button id="nextBtn" onclick="nextQuestion()" class="mt-6 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hidden hover:bg-blue-700 transition text-sm">Sonraki Soru ➡️</button>
         </div>
 
@@ -6222,15 +6223,31 @@
             beginQuiz();
         }
 
+        function karistirDizi(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function skipQuestion() {
+            if (activeQuestions.length - currentIndex <= 1) { return; }
+            const [q] = activeQuestions.splice(currentIndex, 1);
+            activeQuestions.push(q);
+            loadQuestion();
+        }
+
         function openGlobalFavorites() {
             if(favorites.length === 0) { alert("Favori soru yok!"); return; }
-            activeQuestions = [...favorites];
+            activeQuestions = karistirDizi(favorites);
             beginQuiz();
         }
 
         function openGlobalWrongs() {
             if(wrongAnswers.length === 0) { alert("Yanlış yapılan soru yok!"); return; }
-            activeQuestions = [...wrongAnswers];
+            activeQuestions = karistirDizi(wrongAnswers);
             beginQuiz();
         }
 
@@ -6239,7 +6256,7 @@
             const dersIds = new Set(ders.sorular.map(q => q.id));
             const dersFavs = favorites.filter(q => dersIds.has(q.id));
             if(dersFavs.length === 0) { alert("Bu derse ait favori soru yok!"); return; }
-            activeQuestions = dersFavs;
+            activeQuestions = karistirDizi(dersFavs);
             beginQuiz();
         }
 
@@ -6248,7 +6265,7 @@
             const dersIds = new Set(ders.sorular.map(q => q.id));
             const dersWrongs = wrongAnswers.filter(q => dersIds.has(q.id));
             if(dersWrongs.length === 0) { alert("Bu derse ait yanlış yapılan soru yok!"); return; }
-            activeQuestions = dersWrongs;
+            activeQuestions = karistirDizi(dersWrongs);
             beginQuiz();
         }
 
@@ -6357,6 +6374,7 @@
 
             document.getElementById("explanationContainer").classList.add("hidden");
             document.getElementById("nextBtn").classList.add("hidden");
+            document.getElementById("skipBtn").classList.toggle("hidden", activeQuestions.length - currentIndex <= 1);
             updateFavButtonUI();
         }
 
@@ -6388,6 +6406,7 @@
             }
 
             document.getElementById("nextBtn").classList.remove("hidden");
+            document.getElementById("skipBtn").classList.add("hidden");
         }
 
         function nextQuestion() {

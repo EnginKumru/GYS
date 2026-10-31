@@ -27,6 +27,8 @@
                 <p class="text-xs mt-1 text-orange-100">Havuzdaki Sorularla Deneme</p>
             </div>
 
+            <div id="resumeBox" class="space-y-2 hidden"></div>
+
             <h2 class="text-base font-bold text-slate-700 mt-4 mb-2">Ders Seçerek Çalış (21 Ders):</h2>
             <div id="courseList" class="space-y-2 pb-10"></div>
         </div>
@@ -37,6 +39,7 @@
                 <button onclick="goHome()" class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600 font-medium hover:bg-slate-200">🏠 Ana Sayfa</button>
                 <h2 id="detailCourseTitle" class="text-sm font-bold text-blue-600 text-right">Ders Adı</h2>
             </div>
+            <div id="courseResumeBox" class="space-y-2 hidden"></div>
 
             <div class="space-y-3 py-2">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -114,6 +117,19 @@
     </main>
 
     <!-- JavaScript Mantığı -->
+    <!-- Devam et / Baştan başla penceresi -->
+    <div id="resumeModal" class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-5 w-full max-w-sm space-y-3">
+            <h3 class="font-bold text-slate-800 text-sm">Yarım kalan testin var</h3>
+            <p id="resumeModalText" class="text-xs text-slate-600"></p>
+            <div class="flex flex-col gap-2 pt-1">
+                <button id="resumeContinueBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">▶️ Kaldığım yerden devam et</button>
+                <button id="resumeNewBtn" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">🔄 Baştan başla</button>
+                <button id="resumeCancelBtn" class="w-full py-2 text-slate-500 text-xs">Vazgeç</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const veriTabani = [
             { 
@@ -6416,6 +6432,133 @@
         let currentShuffledOptions = [];
         let correctAnswerText = "";
 
+
+        // ===== Yarım kalan testler =====
+        const PROGRESS_KEY = "gys_progress";
+        const PROGRESS_MAX_GUN = 30;
+        let currentModeKey = null;
+        let currentModeLabel = "";
+        let _forceNew = false;
+
+        function loadProgressAll() {
+            try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {}; } catch (e) { return {}; }
+        }
+        function saveProgressAll(o) {
+            try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(o)); } catch (e) {}
+        }
+        function pruneProgress() {
+            const all = loadProgressAll();
+            const sinir = Date.now() - PROGRESS_MAX_GUN * 86400000;
+            let degisti = false;
+            Object.keys(all).forEach(k => { if (!all[k] || !all[k].ts || all[k].ts < sinir || !Array.isArray(all[k].ids)) { delete all[k]; degisti = true; } });
+            if (degisti) saveProgressAll(all);
+        }
+        function saveProgress(nextIndex) {
+            if (!currentModeKey) return;
+            const all = loadProgressAll();
+            if (nextIndex >= activeQuestions.length) {
+                delete all[currentModeKey];
+            } else {
+                all[currentModeKey] = { label: currentModeLabel, ids: activeQuestions.map(q => q.id), index: nextIndex, score: score, wrong: wrongCountScore, ts: Date.now() };
+            }
+            saveProgressAll(all);
+        }
+        function clearProgress(key) {
+            const all = loadProgressAll();
+            if (all[key]) { delete all[key]; saveProgressAll(all); }
+        }
+        function soruBul(id, harita) {
+            return harita[id] || favorites.find(q => q.id === id) || wrongAnswers.find(q => q.id === id) || null;
+        }
+        function resumeProgress(key) {
+            const kayit = loadProgressAll()[key];
+            if (!kayit) return false;
+            const harita = {};
+            veriTabani.forEach(d => d.sorular.forEach(q => { harita[q.id] = q; }));
+            const liste = [];
+            let yeniIndex = 0;
+            kayit.ids.forEach((id, i) => {
+                const q = soruBul(id, harita);
+                if (q) { liste.push(q); if (i < kayit.index) yeniIndex++; }
+            });
+            if (yeniIndex >= liste.length) { clearProgress(key); return false; }
+            currentModeKey = key;
+            currentModeLabel = kayit.label || "";
+            activeQuestions = liste;
+            currentIndex = yeniIndex;
+            score = kayit.score || 0;
+            wrongCountScore = kayit.wrong || 0;
+            document.getElementById("homeScreen").classList.add("hidden");
+            document.getElementById("courseDetailScreen").classList.add("hidden");
+            document.getElementById("resultContainer").classList.add("hidden");
+            document.getElementById("quizContainer").classList.remove("hidden");
+            loadQuestion();
+            return true;
+        }
+        // true dönerse çağıran fonksiyon durur (pencere gösterildi ya da devam edildi)
+        function resumeGate(key, label, fn) {
+            currentModeKey = key;
+            currentModeLabel = label;
+            if (_forceNew) { _forceNew = false; return false; }
+            const kayit = loadProgressAll()[key];
+            if (!kayit || !Array.isArray(kayit.ids) || kayit.index >= kayit.ids.length) return false;
+            const modal = document.getElementById("resumeModal");
+            document.getElementById("resumeModalText").innerText = `${kayit.label || label} — ${kayit.index} / ${kayit.ids.length} soru çözülmüş.`;
+            modal.classList.remove("hidden");
+            document.getElementById("resumeContinueBtn").onclick = () => {
+                modal.classList.add("hidden");
+                if (!resumeProgress(key)) { _forceNew = true; fn(); }
+            };
+            document.getElementById("resumeNewBtn").onclick = () => {
+                modal.classList.add("hidden");
+                clearProgress(key);
+                _forceNew = true;
+                fn();
+            };
+            document.getElementById("resumeCancelBtn").onclick = () => { modal.classList.add("hidden"); };
+            return true;
+        }
+        function resumeBoxHtml(key, kayit) {
+            return `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-emerald-800 truncate">▶️ ${escapeHtml(kayit.label || key)}</p>
+                    <p class="text-[11px] text-emerald-700">${kayit.index} / ${kayit.ids.length} soru çözüldü</p>
+                </div>
+                <div class="flex gap-1.5 shrink-0">
+                    <button data-resume="${escapeHtml(key)}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Devam</button>
+                    <button data-discard="${escapeHtml(key)}" class="bg-white border border-emerald-200 text-slate-500 px-2.5 py-1.5 rounded-lg text-xs" title="Sil">🗑️</button>
+                </div>
+            </div>`;
+        }
+        function renderResumeBoxes() {
+            pruneProgress();
+            const all = loadProgressAll();
+            const keys = Object.keys(all).sort((a, b) => all[b].ts - all[a].ts);
+            const bagla = (kutu) => {
+                kutu.querySelectorAll("[data-resume]").forEach(b => { b.onclick = (e) => { e.stopPropagation(); resumeProgress(b.dataset.resume); }; });
+                kutu.querySelectorAll("[data-discard]").forEach(b => { b.onclick = (e) => { e.stopPropagation(); clearProgress(b.dataset.discard); renderResumeBoxes(); }; });
+            };
+            const home = document.getElementById("resumeBox");
+            if (keys.length) {
+                home.innerHTML = `<h2 class="text-base font-bold text-slate-700 mt-4 mb-2">Yarım Kalan Testler:</h2>` + keys.map(k => resumeBoxHtml(k, all[k])).join("");
+                home.classList.remove("hidden");
+                bagla(home);
+            } else {
+                home.innerHTML = "";
+                home.classList.add("hidden");
+            }
+            const cb = document.getElementById("courseResumeBox");
+            const ilgili = selectedCourseId ? keys.filter(k => k === "ders:" + selectedCourseId || k === "dersfav:" + selectedCourseId || k === "derswrong:" + selectedCourseId) : [];
+            if (ilgili.length) {
+                cb.innerHTML = ilgili.map(k => resumeBoxHtml(k, all[k])).join("");
+                cb.classList.remove("hidden");
+                bagla(cb);
+            } else {
+                cb.innerHTML = "";
+                cb.classList.add("hidden");
+            }
+        }
+
         function updateGlobalCounts() {
             document.getElementById("favCount").innerText = favorites.length;
             document.getElementById("wrongCount").innerText = wrongAnswers.length;
@@ -6434,7 +6577,7 @@
                 card.innerHTML = `
                     <div>
                         <h3 class="font-bold text-slate-700 text-xs">${ders.dersAdi}</h3>
-                        <p class="text-[11px] text-slate-500 mt-0.5">Sınav Soru: ${ders.sinavSoruSayisi} | Havuz: ${ders.sorular.length}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Sınav Soru: ${ders.sinavSoruSayisi} | Havuz: ${ders.sorular.length}${loadProgressAll()["ders:" + ders.id] ? ' | <span class="text-emerald-600 font-semibold">▶️ yarım kaldı</span>' : ''}</p>
                     </div>
                     <span class="bg-blue-50 text-blue-600 px-2.5 py-1.5 rounded-lg font-semibold text-xs whitespace-nowrap ml-2">Seç ➔</span>
                 `;
@@ -6442,6 +6585,8 @@
                 courseList.appendChild(card);
             });
 
+            selectedCourseId = null;
+            renderResumeBoxes();
             document.getElementById("homeScreen").classList.remove("hidden");
             document.getElementById("courseDetailScreen").classList.add("hidden");
             document.getElementById("quizContainer").classList.add("hidden");
@@ -6461,6 +6606,7 @@
             document.getElementById("courseFavCount").innerText = favorites.filter(q => dersIds.has(q.id)).length;
             document.getElementById("courseWrongCount").innerText = wrongAnswers.filter(q => dersIds.has(q.id)).length;
 
+            renderResumeBoxes();
             document.getElementById("homeScreen").classList.add("hidden");
             document.getElementById("courseDetailScreen").classList.remove("hidden");
         }
@@ -6481,6 +6627,7 @@
 
         function startSelectedCourseQuiz() {
             const ders = veriTabani.find(d => d.id === selectedCourseId);
+            if (resumeGate("ders:" + ders.id, ders.dersAdi, startSelectedCourseQuiz)) return;
             let pool = [...ders.sorular].sort(() => Math.random() - 0.5);
 
             if(selectedQuestionCount !== 'all' && pool.length > selectedQuestionCount) {
@@ -6492,6 +6639,7 @@
         }
 
         function startDenemeSinavi() {
+            if (resumeGate("deneme", "Genel Deneme Sınavı", startDenemeSinavi)) return;
             // ANKÜSEM dağılımı: %20 kolay, %40 orta, %40 zor
             const aktifDersler = veriTabani.filter(d => d.sorular.length > 0);
             if(aktifDersler.length === 0) { alert("Sistemde henüz hiç soru bulunmuyor!"); return; }
@@ -6532,17 +6680,20 @@
             if (activeQuestions.length - currentIndex <= 1) { return; }
             const [q] = activeQuestions.splice(currentIndex, 1);
             activeQuestions.push(q);
+            saveProgress(currentIndex);
             loadQuestion();
         }
 
         function openGlobalFavorites() {
             if(favorites.length === 0) { alert("Favori soru yok!"); return; }
+            if (resumeGate("fav", "Favoriler", openGlobalFavorites)) return;
             activeQuestions = karistirDizi(favorites);
             beginQuiz();
         }
 
         function openGlobalWrongs() {
             if(wrongAnswers.length === 0) { alert("Yanlış yapılan soru yok!"); return; }
+            if (resumeGate("wrong", "Yanlışlar", openGlobalWrongs)) return;
             activeQuestions = karistirDizi(wrongAnswers);
             beginQuiz();
         }
@@ -6552,6 +6703,7 @@
             const dersIds = new Set(ders.sorular.map(q => q.id));
             const dersFavs = favorites.filter(q => dersIds.has(q.id));
             if(dersFavs.length === 0) { alert("Bu derse ait favori soru yok!"); return; }
+            if (resumeGate("dersfav:" + ders.id, ders.dersAdi + " · Favoriler", openCourseFavorites)) return;
             activeQuestions = karistirDizi(dersFavs);
             beginQuiz();
         }
@@ -6561,6 +6713,7 @@
             const dersIds = new Set(ders.sorular.map(q => q.id));
             const dersWrongs = wrongAnswers.filter(q => dersIds.has(q.id));
             if(dersWrongs.length === 0) { alert("Bu derse ait yanlış yapılan soru yok!"); return; }
+            if (resumeGate("derswrong:" + ders.id, ders.dersAdi + " · Yanlışlar", openCourseWrongs)) return;
             activeQuestions = karistirDizi(dersWrongs);
             beginQuiz();
         }
@@ -6695,6 +6848,7 @@
             }
 
             updateGlobalCounts();
+            saveProgress(currentIndex + 1);
 
             if(currentQ.aciklama) {
                 document.getElementById("explanationText").innerText = currentQ.aciklama;

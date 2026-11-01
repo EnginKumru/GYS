@@ -40,6 +40,7 @@
                 <h2 id="detailCourseTitle" class="text-sm font-bold text-blue-600 text-right">Ders Adı</h2>
             </div>
             <div id="courseResumeBox" class="space-y-2 hidden"></div>
+            <div id="courseSeenBox" class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-2 text-xs text-slate-600"></div>
 
             <div class="space-y-3 py-2">
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -5396,7 +5397,7 @@
                     {"id": "disamir_207", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, valilik teşkilatında aşağıdakilerden hangisinin disiplin amiri doğrudan Vali’dir?", "dogruCevap": "İl Basın ve Halkla İlişkiler Müdürü", "yanlisCevaplar": ["İl Yazı İşleri Müdürü", "İl Sivil Toplumla İlişkiler Müdürü", "Sosyal Etüt ve Proje Müdürü", "112 Acil Çağrı Merkezi Müdürü"], "aciklama": "İl Basın ve Halkla İlişkiler Müdürünün disiplin amiri Vali’dir (Özel Kalem Müdürü, Hukuk Müşaviri, Vali Yardımcısı, İl Hukuk İşleri Müdürü ve Hudut Mülki İdare Amiri de Vali’ye bağlıdır). İl Yazı İşleri, İl İdare Kurulu, İdare ve Denetim, İl Sivil Toplumla İlişkiler, Sosyal Etüt ve Proje ile 112 Acil Çağrı Merkezi müdürlerinin disiplin amiri Vali Yardımcısıdır.", "zorluk": "zor"},
                     {"id": "disamir_208", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, valilik teşkilatında aşağıdakilerden hangisinin disiplin amiri Vali Yardımcısıdır?", "dogruCevap": "İl Planlama ve Koordinasyon Müdürü", "yanlisCevaplar": ["İl Basın ve Halkla İlişkiler Müdürü", "Özel Kalem Müdürü", "İl Hukuk İşleri Müdürü", "Hukuk Müşaviri"], "aciklama": "İl Planlama ve Koordinasyon Müdürünün disiplin amiri Vali Yardımcısıdır. İl Basın ve Halkla İlişkiler Müdürü, Özel Kalem Müdürü, İl Hukuk İşleri Müdürü ve Hukuk Müşavirinin disiplin amiri Vali’dir.", "zorluk": "zor"},
                     {"id": "disamir_209", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, Valilikte görev yapan Avukatın disiplin amiri aşağıdakilerden hangisidir?", "dogruCevap": "İl Hukuk İşleri Müdürü", "yanlisCevaplar": ["Vali", "Vali Yardımcısı", "Hukuk Müşaviri", "Daire Başkanı"], "aciklama": "Valilikte Avukatın disiplin amiri İl Hukuk İşleri Müdürüdür. Merkez teşkilatında (Nüfus ve Vatandaşlık İşleri ile Hukuk Hizmetleri Genel Müdürlüklerinde) Avukatın disiplin amiri Daire Başkanıdır.", "zorluk": "orta"},
-                    {"id": "disamir_210", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, İçişleri Uzmanı ve İçişleri Uzman Yardımcısının disiplin amirinin “Daire Başkanı” olduğu birim aşağıdakilerden hangisidir?", "dogruCevap": "Hukuk Hizmetleri Genel Müdürlüğü", "yanlisCevaplar": ["Teftiş Kurulu Başkanlığı", "Eğitim Dairesi Başkanlığı", "Özel Kalem Müdürlüğü", "Basın ve Halkla İlişkiler Müşavirliği"], "aciklama": "Hukuk Hizmetleri Genel Müdürlüğünde İçişleri Uzmanı ve Uzman Yardımcısının disiplin amiri Daire Başkanıdır. Teftiş Kurulunda Teftiş Kurulu Başkanı, Eğitim Dairesinde Eğitim Dairesi Başkanı, Özel Kalem Müdürlüğünde Özel Kalem Müdürü, Basın ve Halkla İlişkiler Müşavirliğinde Müşavir disiplin amiridir.", "zorluk": "orta"},
+                    {"id": "disamir_210", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, İçişleri Uzmanı ve İçişleri Uzman Yardımcısının disiplin amirinin “Daire Başkanı” olduğu birim aşağıdakilerden hangisidir?", "dogruCevap": "Hukuk Hizmetleri Genel Müdürlüğü", "yanlisCevaplar": ["Teftiş Kurulu Başkanlığı", "Güvenlik ve Acil Durumlar Koordinasyon Merkezi", "Özel Kalem Müdürlüğü", "Basın ve Halkla İlişkiler Müşavirliği"], "aciklama": "Ek-1 cetveline göre Hukuk Hizmetleri Genel Müdürlüğünde İçişleri Uzmanı ve Uzman Yardımcısının disiplin amiri Daire Başkanıdır. Teftiş Kurulunda Teftiş Kurulu Başkanı, Güvenlik ve Acil Durumlar Koordinasyon Merkezinde Merkez Başkanı, Özel Kalem Müdürlüğünde Özel Kalem Müdürü, Basın ve Halkla İlişkiler Müşavirliğinde Müşavir disiplin amiridir.", "zorluk": "orta"},
                     {"id": "disamir_211", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, ilçe nüfus müdürlüğünde görev yapan Nüfus Müdürünün disiplin amiri aşağıdakilerden hangisidir?", "dogruCevap": "Kaymakam", "yanlisCevaplar": ["İl Nüfus ve Vatandaşlık Müdürü", "Vali Yardımcısı", "Vali", "Nüfus ve Vatandaşlık İşleri Genel Müdürü"], "aciklama": "İlçe Nüfus Müdürünün disiplin amiri Kaymakam’dır. İl Nüfus ve Vatandaşlık İşleri Müdürlüğüne bağlı Nüfus Müdürünün disiplin amiri ise İl Nüfus ve Vatandaşlık Müdürüdür; İl Nüfus ve Vatandaşlık Müdürünün disiplin amiri Vali Yardımcısıdır.", "zorluk": "orta"},
                     {"id": "disamir_212", "soruMetni": "İçişleri Bakanlığı Disiplin Amirleri Yönetmeliği (Ek-1 Cetvel)'ne göre, aşağıdakilerden hangisinin disiplin amiri İl Nüfus ve Vatandaşlık Müdürüdür?", "dogruCevap": "İl Nüfus ve Vatandaşlık İşleri Müdürlüğüne bağlı Nüfus Müdürü", "yanlisCevaplar": ["İlçe Nüfus Müdürü", "Nüfus Müdürüne bağlı şef ve diğer personel", "Kaymakamlıkta görevli Yazı İşleri Müdürü", "İlçe Nüfus Müdürlüğünde görev yapan şef"], "aciklama": "İl Nüfus ve Vatandaşlık İşleri Müdürlüğünde Nüfus Müdürü ile (Nüfus Müdürüne bağlı olmayan) şef ve diğer personelin disiplin amiri İl Nüfus ve Vatandaşlık Müdürüdür. Nüfus Müdürüne bağlı şef ve diğer personelin disiplin amiri Nüfus Müdürüdür; ilçe Nüfus Müdürünün disiplin amiri Kaymakam’dır.", "zorluk": "zor"}
                 ]
@@ -6559,6 +6560,53 @@
             }
         }
 
+        // ===== Çözülen soruları takip (aynı soruyu tur bitmeden tekrar gösterme) =====
+        const SEEN_KEY = "gys_seen";
+        let _qCourse = null;
+        function loadSeen() {
+            try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; } catch (e) { return {}; }
+        }
+        function saveSeen(o) {
+            try { localStorage.setItem(SEEN_KEY, JSON.stringify(o)); } catch (e) {}
+        }
+        function dersOfQuestion(id) {
+            if (!_qCourse) {
+                _qCourse = {};
+                veriTabani.forEach(d => d.sorular.forEach(q => { _qCourse[q.id] = d.id; }));
+            }
+            return _qCourse[id];
+        }
+        function markSeen(q) {
+            const dId = dersOfQuestion(q.id);
+            if (!dId) return;
+            const seen = loadSeen();
+            const arr = seen[dId] || (seen[dId] = []);
+            if (!arr.includes(q.id)) { arr.push(q.id); saveSeen(seen); }
+        }
+        function seenSet(dersId) {
+            const ders = veriTabani.find(d => d.id === dersId);
+            const gecerli = new Set(ders.sorular.map(q => q.id));
+            return new Set((loadSeen()[dersId] || []).filter(id => gecerli.has(id)));
+        }
+        function resetSeen(dersId) {
+            const seen = loadSeen();
+            delete seen[dersId];
+            saveSeen(seen);
+            renderSeenBox();
+        }
+        function renderSeenBox() {
+            const box = document.getElementById("courseSeenBox");
+            if (!box || !selectedCourseId) return;
+            const ders = veriTabani.find(d => d.id === selectedCourseId);
+            const goruldu = seenSet(selectedCourseId).size;
+            const toplam = ders.sorular.length;
+            box.innerHTML = `<span>📖 Bu turda çözülen: <b>${goruldu} / ${toplam}</b> <span class="text-slate-400">(görülmeyenler önce gelir)</span></span>
+                <button id="seenResetBtn" class="shrink-0 bg-white border border-slate-300 text-slate-600 px-2.5 py-1.5 rounded-lg font-semibold">Turu sıfırla</button>`;
+            document.getElementById("seenResetBtn").onclick = () => {
+                if (goruldu === 0 || confirm("Bu dersin çözülen soru kaydı sıfırlansın mı? Tüm sorular yeniden görülmemiş sayılır.")) resetSeen(selectedCourseId);
+            };
+        }
+
         function updateGlobalCounts() {
             document.getElementById("favCount").innerText = favorites.length;
             document.getElementById("wrongCount").innerText = wrongAnswers.length;
@@ -6607,6 +6655,7 @@
             document.getElementById("courseWrongCount").innerText = wrongAnswers.filter(q => dersIds.has(q.id)).length;
 
             renderResumeBoxes();
+            renderSeenBox();
             document.getElementById("homeScreen").classList.add("hidden");
             document.getElementById("courseDetailScreen").classList.remove("hidden");
         }
@@ -6628,10 +6677,23 @@
         function startSelectedCourseQuiz() {
             const ders = veriTabani.find(d => d.id === selectedCourseId);
             if (resumeGate("ders:" + ders.id, ders.dersAdi, startSelectedCourseQuiz)) return;
-            let pool = [...ders.sorular].sort(() => Math.random() - 0.5);
-
-            if(selectedQuestionCount !== 'all' && pool.length > selectedQuestionCount) {
-                pool = pool.slice(0, selectedQuestionCount);
+            let seen = seenSet(ders.id);
+            let gorulmeyen = karistirDizi(ders.sorular.filter(q => !seen.has(q.id)));
+            let gorulen = karistirDizi(ders.sorular.filter(q => seen.has(q.id)));
+            if (gorulmeyen.length === 0) {
+                // Tur tamamlandı: yeni tur başlasın
+                const kayit = loadSeen(); delete kayit[ders.id]; saveSeen(kayit);
+                gorulmeyen = gorulen; gorulen = [];
+            }
+            let pool;
+            if (selectedQuestionCount === 'all') {
+                pool = gorulmeyen.concat(gorulen);
+            } else if (gorulmeyen.length >= selectedQuestionCount) {
+                pool = gorulmeyen.slice(0, selectedQuestionCount);
+            } else {
+                // Görülmeyenler yetmiyor: hepsini al, turu sıfırla, kalanı önceki turdan tamamla
+                const kayit = loadSeen(); delete kayit[ders.id]; saveSeen(kayit);
+                pool = gorulmeyen.concat(gorulen.slice(0, selectedQuestionCount - gorulmeyen.length));
             }
 
             activeQuestions = pool;
@@ -6848,6 +6910,7 @@
             }
 
             updateGlobalCounts();
+            if (currentModeKey && (currentModeKey.indexOf("ders:") === 0 || currentModeKey === "deneme")) markSeen(currentQ);
             saveProgress(currentIndex + 1);
 
             if(currentQ.aciklama) {

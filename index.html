@@ -48,8 +48,11 @@
                     <div class="flex gap-2 mb-3">
                         <button onclick="setQuestionCount(5)" id="btnCount5" class="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-200 transition">5 Soru</button>
                         <button onclick="setQuestionCount(10)" id="btnCount10" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">10 Soru</button>
-                        <button onclick="setQuestionCount(20)" id="btnCount20" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">20 Soru</button>
+                        <button onclick="setQuestionCount('manual')" id="btnCountManual" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">✏️ Manuel</button>
                         <button onclick="setQuestionCount('all')" id="btnCountAll" class="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition">Tümü</button>
+                    </div>
+                    <div id="manualCountWrap" class="hidden mb-3">
+                        <input id="manualCountInput" type="number" inputmode="numeric" min="1" step="1" placeholder="Soru adedini yaz (örn. 35)" oninput="manualCountChanged()" class="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
                     </div>
                     <button onclick="startSelectedCourseQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition text-sm">▶️ Testi Başlat</button>
                     <button id="newOnlyBtn" onclick="startNewOnlyQuiz()" class="w-full mt-2 bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition text-sm">🆕 Sadece görülmeyenler</button>
@@ -4845,7 +4848,12 @@
                     {"id": "kvkk_168", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu’na göre, Kanun’un 7 nci maddesi hükmüne aykırı olarak; kişisel verileri silmeyen veya anonim hâle getirmeyenler hakkında uygulanacak yaptırım ve ilgili kanun aşağıdakilerden hangisidir?", "dogruCevap": "5237 sayılı Türk Ceza Kanunu’nun 138 inci maddesine göre cezalandırılma", "yanlisCevaplar": ["6698 sayılı Kanun uyarınca idari para cezası", "5326 sayılı Kabahatler Kanunu uyarınca idari para cezası", "657 sayılı Kanun uyarınca devlet memurluğundan çıkarma cezası", "5271 sayılı Ceza Muhakemesi Kanunu uyarınca güvenlik tedbiri"], "aciklama": "Md.17/2’ye göre Kanun’un 7 nci maddesi hükmüne aykırı olarak kişisel verileri silmeyen veya anonim hâle getirmeyenler 5237 sayılı Türk Ceza Kanunu’nun 138 inci maddesine göre cezalandırılır.", "zorluk": "orta"},
                     {"id": "kvkk_169", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu’na göre, Kişisel Verileri Koruma Kurulunun inceleme konusuyla ilgili istemiş olduğu bilgi ve belgeleri veri sorumlusunun kaç gün içinde göndermesi gerekir?", "dogruCevap": "On beş gün", "yanlisCevaplar": ["Yedi gün", "Otuz gün", "Kırk beş gün", "Altmış gün"], "aciklama": "KVKK Md.15/3: Devlet sırrı niteliğindeki bilgi ve belgeler hariç, veri sorumlusu Kurulun istediği bilgi ve belgeleri on beş gün içinde göndermek ve gerektiğinde yerinde inceleme yapılmasına imkân sağlamak zorundadır.", "zorluk": "orta"},
                     {"id": "kvkk_170", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu’na göre, Kurulun inceleme konusuyla ilgili istediği aşağıdaki bilgi ve belgelerden hangisi veri sorumlusunca Kurula gönderilmek zorunda değildir?", "dogruCevap": "Devlet sırrı niteliğindeki bilgi ve belgeler", "yanlisCevaplar": ["Veri envanterine ilişkin kayıtlar", "Veri işleme sözleşmeleri", "Başvurulara verilen cevaplar", "Açık rıza metinleri"], "aciklama": "KVKK Md.15/3: Devlet sırrı niteliğindeki bilgi ve belgeler hariç, veri sorumlusu Kurulun istediği bilgi ve belgeleri göndermek zorundadır.", "zorluk": "kolay"},
-                    {"id": "kvkk_171", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu’na göre, Kurulun ihlalin varlığını tespit ederek verdiği ve veri sorumlusuna tebliğ edilen hukuka aykırılıkların giderilmesi kararı, tebliğden itibaren en geç kaç gün içinde yerine getirilir?", "dogruCevap": "Otuz gün", "yanlisCevaplar": ["On beş gün", "Kırk beş gün", "Altmış gün", "Doksan gün"], "aciklama": "KVKK Md.15/5: Karar, tebliğden itibaren gecikmeksizin ve en geç otuz gün içinde yerine getirilir.", "zorluk": "orta"}
+                    {"id": "kvkk_171", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu’na göre, Kurulun ihlalin varlığını tespit ederek verdiği ve veri sorumlusuna tebliğ edilen hukuka aykırılıkların giderilmesi kararı, tebliğden itibaren en geç kaç gün içinde yerine getirilir?", "dogruCevap": "Otuz gün", "yanlisCevaplar": ["On beş gün", "Kırk beş gün", "Altmış gün", "Doksan gün"], "aciklama": "KVKK Md.15/5: Karar, tebliğden itibaren gecikmeksizin ve en geç otuz gün içinde yerine getirilir.", "zorluk": "orta"},
+                    {"id": "kvkk_172", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu'na göre, yeterlilik kararı yokluğunda başvurulabilecek uygun güvencelerden biri olan standart sözleşme, imzalanmasından itibaren kaç iş günü içinde Kuruma bildirilmelidir?", "dogruCevap": "5 iş günü", "yanlisCevaplar": ["3 iş günü", "10 iş günü", "15 iş günü", "30 iş günü"], "aciklama": "Md.9: Standart sözleşme, imzalanmasından itibaren beş iş günü içinde veri sorumlusu veya veri işleyen tarafından Kuruma bildirilir.", "zorluk": "orta"},
+                    {"id": "kvkk_173", "soruMetni": "I. Kişisel veri işlenip işlenmediğini öğrenme\nII. Kişisel verilerin işlenme amacına uygun kullanılıp kullanılmadığını öğrenme\nIII. Kişisel verilerin aktarıldığı üçüncü kişileri bilme\nIV. Veri sorumlusuna idari para cezası verme\n6698 sayılı Kişisel Verilerin Korunması Kanunu'na göre yukarıdakilerden hangileri ilgili kişinin haklarındandır?", "dogruCevap": "I, II ve III", "yanlisCevaplar": ["I ve II", "II ve IV", "I, III ve IV", "I, II, III ve IV"], "aciklama": "Md.11: İlgili kişi; verinin işlenip işlenmediğini öğrenme, amacına uygun kullanılıp kullanılmadığını öğrenme ve aktarıldığı üçüncü kişileri bilme haklarına sahiptir. İdari para cezasını Kurul verir; ilgili kişi ancak Kurula şikâyette bulunabilir.", "zorluk": "kolay"},
+                    {"id": "kvkk_174", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu'na göre, veri sorumlusunun veya yetkilendirdiği kişinin aydınlatma yükümlülüğünü yerine getirme zamanı aşağıdakilerden hangisidir?", "dogruCevap": "Kişisel verilerin elde edilmesi sırasında", "yanlisCevaplar": ["Kişisel verilerin işlenmesi tamamlandıktan sonra", "İlgili kişinin başvurusundan itibaren 30 gün içinde", "Veri Sorumluları Siciline kayıt yapıldıktan sonra", "Kişisel verilerin üçüncü kişilere aktarılmasından sonra"], "aciklama": "Md.10/1: Kişisel verilerin elde edilmesi sırasında veri sorumlusu veya yetkilendirdiği kişi, ilgili kişilere aydınlatma yapar.", "zorluk": "kolay"},
+                    {"id": "kvkk_175", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu'na göre veri sorumlusu, ilgili kişinin başvurusunda yer alan talepleri, talebin niteliğine göre en kısa sürede ve en geç kaç gün içinde ücretsiz olarak sonuçlandırır?", "dogruCevap": "30", "yanlisCevaplar": ["7", "10", "15", "45"], "aciklama": "Md.13/2: Talepler en kısa sürede ve en geç otuz gün içinde ücretsiz sonuçlandırılır; işlemin ayrıca maliyeti varsa Kurulca belirlenen tarifedeki ücret alınabilir.", "zorluk": "kolay"},
+                    {"id": "kvkk_176", "soruMetni": "6698 sayılı Kişisel Verilerin Korunması Kanunu'na göre, Kişisel Verileri Koruma Kurumunun teşkilat yapısı ve görevlerine ilişkin aşağıdaki ifadelerden hangisi yanlıştır?", "dogruCevap": "Kurum, Kurul ve Başkanlıktan oluşur ve Kurumun karar organı Başkanlıktır.", "yanlisCevaplar": ["Kurum, idari ve mali özerkliğe sahip olup kamu tüzel kişiliğini haizdir.", "Kurum, görev alanına giren konularda kamu kurum ve kuruluşları, sivil toplum kuruluşları, meslek örgütleri ve üniversitelerle iş birliği yapabilir.", "Kurum, yıllık faaliyet raporunu Cumhurbaşkanlığına ve Türkiye Büyük Millet Meclisi İnsan Haklarını İnceleme Komisyonuna sunar.", "Kurum, kişisel verilerle ilgili uluslararası gelişmeleri izler ve değerlendirir."], "aciklama": "Md.19: Kurum, Kurul ve Başkanlıktan oluşur; Kurumun karar organı Kuruldur (Başkanlık değildir). Diğer ifadeler Md.19-20'ye uygundur.", "zorluk": "orta"}
                 ]
             },
             { id: "d17", dersAdi: "17. Resmi Yazışmalarda Uygulanacak Usul ve Esaslar", sinavSoruSayisi: 8, 
@@ -6914,19 +6922,33 @@
 
         function setQuestionCount(count) {
             selectedQuestionCount = count;
-            ['5', '10', '20', 'All'].forEach(c => {
+            ['5', '10', 'Manual', 'All'].forEach(c => {
                 const btn = document.getElementById(`btnCount${c}`);
                 if(btn) {
                     btn.className = "flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold border border-slate-200 transition";
                 }
             });
-            const activeBtn = document.getElementById(`btnCount${count === 'all' ? 'All' : count}`);
+            const key = count === 'all' ? 'All' : (count === 'manual' ? 'Manual' : count);
+            const activeBtn = document.getElementById(`btnCount${key}`);
             if(activeBtn) {
                 activeBtn.className = "flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold border border-blue-200 transition";
             }
+            const wrap = document.getElementById("manualCountWrap");
+            if (wrap) wrap.classList.toggle("hidden", count !== 'manual');
+            if (count === 'manual') {
+                const inp = document.getElementById("manualCountInput");
+                if (inp) { inp.focus(); manualCountChanged(); }
+            }
+        }
+
+        function manualCountChanged() {
+            const inp = document.getElementById("manualCountInput");
+            const n = parseInt(inp ? inp.value : "", 10);
+            selectedQuestionCount = (n >= 1) ? n : 'manual';
         }
 
         function startSelectedCourseQuiz() {
+            if (selectedQuestionCount === 'manual') { alert('Lütfen çözmek istediğin soru adedini yaz.'); const mi=document.getElementById('manualCountInput'); if(mi) mi.focus(); return; }
             const ders = veriTabani.find(d => d.id === selectedCourseId);
             if (resumeGate("ders:" + ders.id, ders.dersAdi, startSelectedCourseQuiz)) return;
             let seen = seenSet(ders.id);

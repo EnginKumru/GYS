@@ -144,6 +144,7 @@
             <label class="flex items-start gap-2 text-xs text-slate-700"><input id="printSeen" type="checkbox" checked class="mt-0.5"> Bu sorular “görüldü” sayılsın (sonraki denemede gelmesin)</label>
             <label class="flex items-start gap-2 text-xs text-slate-700"><input id="printAcik" type="checkbox" class="mt-0.5"> Cevap anahtarından sonra açıklamaları da ekle</label>
             <div class="flex flex-col gap-2 pt-1">
+                <button onclick="printFavDeneme('pdf')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">📄 PDF olarak indir (site adı/tarih basılmaz)</button>
                 <button onclick="printFavDeneme()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold">🖨️ Oluştur ve yazdır</button>
                 <button onclick="document.getElementById('printModal').classList.add('hidden')" class="w-full py-2 text-slate-500 text-xs">Vazgeç</button>
             </div>
@@ -9086,7 +9087,42 @@
             });
             return sayfalar;
         }
-        async function printFavDeneme() {
+        function scriptYukle(src) {
+            return new Promise((ok, hata) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = hata; document.head.appendChild(sc); });
+        }
+        // Sayfaları uygulama içinde PDF'e çevirir (tarayıcının yazdırma başlık/altbilgisi olmadan)
+        async function pdfIndir(sayfaHtmller, dosyaAdi) {
+            const durum = document.createElement("div");
+            durum.style.cssText = "position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#fff;font:bold 15px Arial";
+            durum.innerText = "PDF hazırlanıyor…";
+            document.body.appendChild(durum);
+            const kap = document.createElement("div");
+            kap.className = "pdoc";
+            kap.style.cssText = "position:absolute;left:-10000px;top:0;background:#fff";
+            document.body.appendChild(kap);
+            try {
+                if (!window.html2canvas) await scriptYukle("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+                if (!window.jspdf) await scriptYukle("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+                const pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", compress: true });
+                for (let i = 0; i < sayfaHtmller.length; i++) {
+                    durum.innerText = `PDF hazırlanıyor… ${i + 1} / ${sayfaHtmller.length}`;
+                    kap.innerHTML = sayfaHtmller[i];
+                    await Promise.all([...kap.querySelectorAll("img")].map(im => im.decode().catch(() => {})));
+                    const tuval = await window.html2canvas(kap.firstElementChild, { scale: 2, backgroundColor: "#ffffff", logging: false });
+                    const gen = 184, yuk = Math.min(273, tuval.height * gen / tuval.width);
+                    if (i > 0) pdf.addPage();
+                    pdf.addImage(tuval.toDataURL("image/jpeg", 0.8), "JPEG", 13, 12, gen, yuk);
+                    pdf.setFontSize(9);
+                    pdf.text(`${i + 1} / ${sayfaHtmller.length}`, 105, 290, { align: "center" });
+                }
+                pdf.save(dosyaAdi);
+            } catch (e) {
+                alert("PDF oluşturulamadı (internet bağlantısını kontrol edin). Yazdır seçeneğini kullanabilirsiniz.");
+            } finally {
+                kap.remove(); durum.remove();
+            }
+        }
+        async function printFavDeneme(mod) {
             document.getElementById("printModal").classList.add("hidden");
             const gorulduSay = document.getElementById("printSeen").checked;
             const aciklamaEkle = document.getElementById("printAcik").checked;
@@ -9122,8 +9158,9 @@
             sayfalar.push(...await sayfala([...soruBloklari, `<div class="pend">TEST BİTTİ<br>CEVAPLARINIZI KONTROL EDİNİZ</div>`], ust));
             sayfalar.push({ ust: anahtarHtml, kols: null });
             if (aciklamaEkle) sayfalar.push(...await sayfala(secilen.map((q, i) => `<div class="pa-i"><b>${i + 1}. (${anahtar[i]})</b> ${escapeHtml(q.aciklama || "").replace(/\n/g, "<br>")}</div>`), `<div class="pa-h">AÇIKLAMALAR</div>`));
-            const N = sayfalar.length;
-            alan.innerHTML = sayfalar.map((s, i) => `<div class="ppage">${s.ust || ""}${s.kols ? `<div class="pcols">${s.kols.map(k => `<div class="pcol">${k.join("")}</div>`).join("")}</div>` : ""}</div>`).join("");
+            const sayfaHtmller = sayfalar.map(s => `<div class="ppage">${s.ust || ""}${s.kols ? `<div class="pcols">${s.kols.map(k => `<div class="pcol">${k.join("")}</div>`).join("")}</div>` : ""}</div>`);
+            if (mod === "pdf") { await pdfIndir(sayfaHtmller, `favori-denemesi-${tarih.replace(/\./g, "-")}.pdf`); return; }
+            alan.innerHTML = sayfaHtmller.join("");
             setTimeout(() => window.print(), 300);
         }
         function markFavSeen(q) {

@@ -23,9 +23,10 @@
         
         <!-- 1. ANA EKRAN -->
         <div id="homeScreen" class="space-y-4 my-4">
-            <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-5 rounded-2xl shadow-md text-white text-center cursor-pointer hover:opacity-95 transition" onclick="startDenemeSinavi()">
-                <h2 class="text-xl font-bold">🎯 Genel Deneme Sınavı</h2>
-                <p class="text-xs mt-1 text-orange-100">Havuzdaki Sorularla Deneme</p>
+            <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-5 rounded-2xl shadow-md text-white text-center cursor-pointer hover:opacity-95 transition" onclick="startFavCoz()">
+                <h2 class="text-xl font-bold">⭐ Favorilerden Çöz</h2>
+                <p class="text-xs mt-1 text-orange-100">Soru sayısını sen belirle · derslere eşit dağılır · çözdüğün soru tur bitene kadar gelmez</p>
+                <p id="favCozInfo" class="text-[11px] mt-1 font-semibold text-orange-50"></p>
             </div>
 
             <div class="bg-gradient-to-r from-amber-400 to-yellow-400 p-5 rounded-2xl shadow-md text-amber-950 text-center cursor-pointer hover:opacity-95 transition" onclick="startFavDeneme()">
@@ -136,6 +137,32 @@
     </main>
 
     <!-- JavaScript Mantığı -->
+    <!-- Favorilerden Çöz penceresi -->
+    <div id="favCozModal" class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-5 w-full max-w-sm space-y-3 max-h-[90vh] overflow-y-auto">
+            <h3 class="font-bold text-slate-800 text-sm">⭐ Favorilerden Çöz</h3>
+            <p id="favCozOzet" class="text-xs text-slate-600"></p>
+            <label class="block text-xs font-semibold text-slate-700">Kaç soru çözmek istiyorsun?
+                <input id="favCozSayi" type="number" inputmode="numeric" min="1" class="mt-1 w-full border border-slate-300 rounded-xl px-3 py-2 text-base font-bold text-slate-800" oninput="favCozOnizle()">
+            </label>
+            <div class="flex gap-2">
+                <button onclick="favCozSayiAyarla(50)" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700">50</button>
+                <button onclick="favCozSayiAyarla(100)" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700">100</button>
+                <button onclick="favCozSayiAyarla(200)" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700">200</button>
+                <button onclick="favCozSayiAyarla(0)" class="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700">Hepsi</button>
+            </div>
+            <p id="favCozOnizleme" class="text-xs font-semibold text-orange-700"></p>
+            <details class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700">
+                <summary class="cursor-pointer font-semibold">Ders ders dağılım ve tur durumu</summary>
+                <div id="favCozDetay" class="mt-2 space-y-1"></div>
+                <button onclick="resetFavCoz()" class="mt-2 text-[11px] underline text-slate-500">Turları sıfırla</button>
+            </details>
+            <div class="flex flex-col gap-2 pt-1">
+                <button onclick="favCozBaslat()" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold">Başla</button>
+                <button onclick="document.getElementById('favCozModal').classList.add('hidden')" class="w-full py-2 text-slate-500 text-xs">Vazgeç</button>
+            </div>
+        </div>
+    </div>
     <!-- Favori Denemesi yazdırma penceresi -->
     <div id="printModal" class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-5 w-full max-w-sm space-y-3">
@@ -8366,7 +8393,8 @@
                     {"id": "valilik_570", "soruMetni": "Valilik ve Kaymakamlık Birimleri Teşkilat, Görev ve Çalışma Yönetmeliği'ne göre, birim amirlerinin personelin görev dağılımı üzerindeki yetkisi hakkında aşağıdakilerden hangisi doğrudur?", "dogruCevap": "Birimdeki personelin görev dağılımında geçici olarak değişiklikler yapabilirler.", "yanlisCevaplar": ["Personelin kadro unvanını ve derecesini kalıcı olarak değiştirebilirler.", "Personelin görev yerini vali onayı olmadan ilçe dışına değiştirebilirler.", "Personel üzerinde görev dağılımı yapma yetkileri yoktur, bu yetki sadece validedir."], "aciklama": "Doğru: Birim amirleri birimin iş ve işlemlerinin yürütülmesinde gerekli iş bölümünü yapar, iş birliğini sağlar ve birimdeki personelin görev dağılımında geçici olarak değişiklikler yapabilir (md.13/3-c).\nYanlış seçenekler:\n• Kadro unvanı ve derece değişikliği birim amirinin yetkisinde değildir; bunlar atama ve özlük işlemleridir.\n• Personelin görev yerini değiştirmek (ilçe dışına göndermek) atamaya yetkili amirin işidir; birim amirinin yetkisi birim içi ve geçicidir.\n• Birim amirlerinin iş bölümü yapma ve görev dağılımında geçici değişiklik yapma yetkisi Yönetmelikte açıkça verilmiştir.", "zorluk": "orta"},
                     {"id": "valilik_571", "soruMetni": "Valilik ve Kaymakamlık Birimleri Teşkilat, Görev ve Çalışma Yönetmeliği'ne göre, valilik birimlerinin cari ve yatırım bütçe tekliflerini hazırlamak, genel bütçeden gönderilen ödeneklerin gider gerçekleştirmesini yapmak ve mutemetlik iş ve işlemlerini yürütmek hangi şefliğin görevidir?", "dogruCevap": "İl Yazı İşleri Müdürlüğü İşlemler Şefliği", "yanlisCevaplar": ["İl Yazı İşleri Müdürlüğü Evrak Şefliği", "İl Planlama ve Koordinasyon Müdürlüğü", "Defterdarlık Muhasebe Müdürlüğü"], "aciklama": "Doğru: İşlemler Şefliği. Genel bütçeden gönderilen ödeneklerin gider gerçekleştirmesini yapmak, mutemetlik iş ve işlemlerini yürütmek, valiliğin mali işlerle ilgili hizmetlerini yürütmek, valilik ve birimlerin cari ve yatırım bütçe tekliflerini hazırlamak ve cari ödeneklerin teminini takip etmek İl Yazı İşleri Müdürlüğü İşlemler Şefliğinin görevidir (md.15/1-b-12).\nYanlış seçenekler:\n• Evrak Şefliği: Evrakı kabul, kayıt, havaleye hazırlama, dağıtım ve evrak istatistiği işlerini yürütür; mali işlerle ilgisi yoktur.\n• İl Planlama ve Koordinasyon Müdürlüğü: Kuruluş ve görevleri özel mevzuatında düzenlenen ayrı bir birimdir; valilik birimlerinin bütçe ve mutemetlik işleri ona verilmemiştir.\n• Defterdarlık Muhasebe Müdürlüğü: Hazine ve Maliye Bakanlığının taşra birimidir; valilik birimi değildir.\nHafıza notu: İl Yazı İşleri'nde evrak dışındaki işlerin neredeyse tamamı İşlemler Şefliğindedir.", "zorluk": "orta"},
                     {"id": "valilik_572", "soruMetni": "Valilik ve Kaymakamlık Birimleri Teşkilat, Görev ve Çalışma Yönetmeliği'ne göre, vali, vali yardımcısı, kaymakam, hukuk işleri müdürü ve kaymakam adayı gibi Bakanlık personelinin il kademesinde izlenmesi gereken özlük işleri hangi birimce yürütülür?", "dogruCevap": "İl Yazı İşleri Müdürlüğü İşlemler Şefliği", "yanlisCevaplar": ["İl Yazı İşleri Müdürlüğü Evrak Şefliği", "Özel Kalem Müdürlüğü", "İl Emniyet Müdürlüğü Personel Şubesi"], "aciklama": "Doğru: İşlemler Şefliği. Vali, vali yardımcısı, kaymakam, hukuk işleri müdürü, kaymakam adayı gibi Bakanlık personelinin il kademesinde izlenmesi gereken özlük işleri ile Yönetmelikte düzenlenen birim personeli ve sözleşmeli personelin atanma, yer ve görev değiştirme, kademe ilerlemesi, derece yükselmesi ve diğer özlük işleri İl Yazı İşleri Müdürlüğü İşlemler Şefliğince yürütülür (md.15/1-b-2).\nYanlış seçenekler:\n• Evrak Şefliği: Yalnızca evrak kabul, kayıt, havale hazırlığı ve dağıtım işlerini yürütür.\n• Özel Kalem Müdürlüğü: Valiye bağlı çalışır; valinin özel haberleşmesi ile görev ve izin işleri, ziyaret ve program yazışmaları gibi makam işlerini yürütür (md.19). Bakanlık personelinin il kademesindeki özlük işleri ise İşlemler Şefliğindedir. Karıştırma: valinin görev/izin işi Özel Kalem, özlük dosyası işleri İşlemler Şefliği.\n• İl Emniyet Müdürlüğü Personel Şubesi: Emniyet personelinin işlerine bakar; mülki idare amirlerinin özlük işleriyle ilgisi yoktur.", "zorluk": "orta"},
-                    {"id": "valilik_573", "soruMetni": "Valilik ve Kaymakamlık Birimleri Teşkilat, Görev ve Çalışma Yönetmeliği’ne göre, İl Basın ve Halkla İlişkiler Müdürlüğü gazete, dergi, haber ajansları ve medya izleme merkezleri ile ilgili aşağıdaki işlemlerden hangisini yürütür?", "dogruCevap": "Abonelik iş ve işlemlerini yapmak", "yanlisCevaplar": ["Medya çalışanlarının iş sözleşmelerini onaylamak", "Gazetelerin basım izinlerini doğrudan onaylamak ve ruhsatlandırmak", "Yayın organlarına idari para cezası kesmek", "Yayın organlarının kuruluş izinlerini vermek"], "aciklama": "Doğru: Abonelik iş ve işlemlerini yapmak. İl Basın ve Halkla İlişkiler Müdürlüğü gazete, dergi, haber ajansları ve medya izleme merkezleri ile ilgili abonelik iş ve işlemlerini yapar.\nYanlış seçenekler: Müdürlüğün medya çalışanlarının iş sözleşmelerini onaylama, gazetelere basım izni veya ruhsat verme, yayın organlarına idari para cezası kesme ya da kuruluş izni verme gibi bir görevi yoktur. 5681 ve 5187 sayılı Kanunlar kapsamında yalnızca öngörülen BİLDİRİMLERİ kabul eder.\nMüdürlüğün diğer görevleri: basın takibi ve bülten, sarı basın kartı başvuruları, bilgi edinme başvuruları, BİMER, gazetecilerin mal bildirimleri.", "zorluk": "orta"}
+                    {"id": "valilik_573", "soruMetni": "Valilik ve Kaymakamlık Birimleri Teşkilat, Görev ve Çalışma Yönetmeliği’ne göre, İl Basın ve Halkla İlişkiler Müdürlüğü gazete, dergi, haber ajansları ve medya izleme merkezleri ile ilgili aşağıdaki işlemlerden hangisini yürütür?", "dogruCevap": "Abonelik iş ve işlemlerini yapmak", "yanlisCevaplar": ["Medya çalışanlarının iş sözleşmelerini onaylamak", "Gazetelerin basım izinlerini doğrudan onaylamak ve ruhsatlandırmak", "Yayın organlarına idari para cezası kesmek", "Yayın organlarının kuruluş izinlerini vermek"], "aciklama": "Doğru: Abonelik iş ve işlemlerini yapmak. İl Basın ve Halkla İlişkiler Müdürlüğü gazete, dergi, haber ajansları ve medya izleme merkezleri ile ilgili abonelik iş ve işlemlerini yapar.\nYanlış seçenekler: Müdürlüğün medya çalışanlarının iş sözleşmelerini onaylama, gazetelere basım izni veya ruhsat verme, yayın organlarına idari para cezası kesme ya da kuruluş izni verme gibi bir görevi yoktur. 5681 ve 5187 sayılı Kanunlar kapsamında yalnızca öngörülen BİLDİRİMLERİ kabul eder.\nMüdürlüğün diğer görevleri: basın takibi ve bülten, sarı basın kartı başvuruları, bilgi edinme başvuruları, BİMER, gazetecilerin mal bildirimleri.", "zorluk": "orta"},
+                    {"id": "valilik_574", "soruMetni": "Valilik ve Kaymakamlık Birimleri Teşkilat, Görev ve Çalışma Yönetmeliği'ne göre zimmetle ilgili aşağıdakilerden hangisi yanlıştır?", "dogruCevap": "Valilik birimlerinin gidecek evrakı dağıtım masasına zimmetle teslim edilir.", "yanlisCevaplar": ["Valilik birimlerine gidecek değerli evrak zimmetle verilir.", "Valilik birimlerine gidecek, evrak şefinin gerekli görmediği normal evrak zimmetsiz verilir.", "Evrak işleri valilik evrak şefliğince yürütülen Bakanlık birimlerinin gidecek evrakı zimmetle teslim edilir.", "Gizlilik dereceli olmayan evrak, havale edildiği yere zarflanmadan zimmetle verilir."], "aciklama": "Doğru (yanlış ifade): Valilik birimlerinin gidecek (giden) evrakı dağıtım masası görevlilerine ZİMMETSİZ teslim edilir.\nDiğer seçeneklerin doğrusu (hepsi doğru):\n• Valilik birimlerine gidecek özellik taşıyan ve değerli evrak zimmetle verilir.\n• Evrak şefinin gerekli görmediği normal evrak zimmetsiz verilir (gerekli gördüğü normal evrak zimmetle verilir).\n• Valilik birimi olmayan, ama evrak kabul ve sevk işlemleri valilik evrak şefliğince yürütülen Bakanlık birimlerinin gidecek evrakı zimmetle teslim edilir.\n• Diğer evrak gideceği yere göre ayrılır: gizlilik dereceli olmayanlar zarflanmadan, gizlilik dereceli olanlar zarflanarak zimmetle verilir.\nTuzak: 'Birimlerİne gidecek' = gelen evrak, evrakın niteliğine bakılır (değerliyse zimmet). 'Birimlerİnin gidecek evrakı' = giden evrak, gönderen birime bakılır (valilik birimiyse zimmetsiz, dışarıdaki Bakanlık birimiyse zimmetli).", "zorluk": "Zor"}
                 ]
             },
             { id: "d21", dersAdi: "21. Mal Bildiriminde Bulunulması Hakkında Yönetmelik", sinavSoruSayisi: 3,
@@ -9049,6 +9077,127 @@
             });
             return secilen;
         }
+        // ===== Favorilerden Çöz: soru sayısı serbest, derslere eşit dağılım, ders bazında ayrı tur =====
+        const FAVCOZTUR_KEY = "gys_favcoztur";
+        const FAVCOZSAYI_KEY = "gys_favcozsayi";
+        function loadFavCozTur() { try { return JSON.parse(localStorage.getItem(FAVCOZTUR_KEY)) || {}; } catch (e) { return {}; } }
+        function saveFavCozTur(o) { try { localStorage.setItem(FAVCOZTUR_KEY, JSON.stringify(o)); } catch (e) {} }
+        // Favorisi olan dersler (ders sırasıyla): [{ders, favs}]
+        function favCozDersler() {
+            const favDers = favlarDersBazinda();
+            return veriTabani.filter(d => (favDers[d.id] || []).length).map(d => ({ ders: d, favs: favDers[d.id] }));
+        }
+        // N soruyu derslere eşit böler; favorisi payından az olan dersin eksiği diğerlerine dağıtılır
+        function favCozDagit(dersler, n) {
+            const kota = {};
+            let kalan = Math.min(n, dersler.reduce((a, x) => a + x.favs.length, 0));
+            let aktif = dersler.slice();
+            while (aktif.length && kalan > 0) {
+                const pay = Math.floor(kalan / aktif.length);
+                const dolan = aktif.filter(x => x.favs.length <= pay);
+                if (dolan.length) {
+                    dolan.forEach(x => { kota[x.ders.id] = x.favs.length; kalan -= x.favs.length; });
+                    aktif = aktif.filter(x => x.favs.length > pay);
+                    continue;
+                }
+                aktif.forEach(x => { kota[x.ders.id] = pay; });
+                let artan = kalan - pay * aktif.length;
+                karistirDizi(aktif).slice(0, artan).forEach(x => { kota[x.ders.id]++; });
+                kalan = 0;
+            }
+            return kota;
+        }
+        function favCozSec(n, tur) {
+            const dersler = favCozDersler();
+            const kota = favCozDagit(dersler, n);
+            const secilen = [];
+            dersler.forEach(({ ders, favs }) => {
+                const k = kota[ders.id] || 0;
+                if (!k) return;
+                const kayit = tur[ders.id] || (tur[ders.id] = { tur: 1, ids: [] });
+                const gorulen = new Set(kayit.ids);
+                let alinan = karistirDizi(favs.filter(q => !gorulen.has(q.id))).slice(0, k);
+                if (alinan.length < k) {
+                    // bu dersin turu bitti: başa sar
+                    kayit.tur++;
+                    kayit.ids = [];
+                    const al = new Set(alinan.map(q => q.id));
+                    alinan = alinan.concat(karistirDizi(favs.filter(q => !al.has(q.id))).slice(0, k - alinan.length));
+                }
+                secilen.push(...alinan);
+            });
+            return secilen;
+        }
+        function markFavCozSeen(q) {
+            const dId = dersOfQuestion(q.id);
+            if (!dId) return;
+            const tur = loadFavCozTur();
+            const kayit = tur[dId] || (tur[dId] = { tur: 1, ids: [] });
+            if (!kayit.ids.includes(q.id)) { kayit.ids.push(q.id); saveFavCozTur(tur); }
+        }
+        function favCozDurum() {
+            const tur = loadFavCozTur();
+            let toplam = 0, cozulen = 0;
+            const dersler = favCozDersler().map(x => {
+                const kayit = tur[x.ders.id] || { tur: 1, ids: [] };
+                const ids = new Set(x.favs.map(q => q.id));
+                const g = kayit.ids.filter(id => ids.has(id)).length;
+                toplam += x.favs.length; cozulen += g;
+                return { ...x, turNo: kayit.tur, g };
+            });
+            return { dersler, toplam, cozulen };
+        }
+        function renderFavCozInfo() {
+            const info = document.getElementById("favCozInfo");
+            if (!info) return;
+            const d = favCozDurum();
+            info.innerText = d.toplam ? `${d.toplam} favori · ${d.dersler.length} ders · bu turlarda çözülen ${d.cozulen}/${d.toplam}` : "Henüz favori soru yok";
+        }
+        function favCozOnizle() {
+            const d = favCozDurum();
+            const n = parseInt(document.getElementById("favCozSayi").value, 10) || 0;
+            const kota = favCozDagit(d.dersler, n);
+            const gelecek = Object.values(kota).reduce((a, b) => a + b, 0);
+            document.getElementById("favCozOnizleme").innerText = n < 1 ? "Bir sayı yaz." :
+                (gelecek < n ? `Toplam ${d.toplam} favorin var; ${gelecek} soru gelecek.` : `${gelecek} soru gelecek (${d.dersler.length} derse dağıtılır).`);
+            document.getElementById("favCozDetay").innerHTML = d.dersler.map(x =>
+                `<div class="flex justify-between gap-2"><span class="truncate">${escapeHtml(x.ders.dersAdi)}</span><span class="shrink-0 font-semibold">${kota[x.ders.id] || 0} soru · Tur ${x.turNo} · ${x.g}/${x.favs.length}</span></div>`).join("");
+        }
+        function favCozSayiAyarla(n) {
+            document.getElementById("favCozSayi").value = n || favCozDurum().toplam;
+            favCozOnizle();
+        }
+        function startFavCoz() {
+            if (resumeGate("favcoz", "⭐ Favorilerden Çöz", startFavCoz)) return;
+            const d = favCozDurum();
+            if (!d.toplam) { alert("Favori soru yok! Soruları yıldızlayarak favorilere ekleyebilirsin."); return; }
+            document.getElementById("favCozOzet").innerText = `${d.toplam} favori sorun var (${d.dersler.length} ders). Yazdığın sayı derslere eşit dağıtılır; favorisi az olan dersin eksiği diğer derslerden tamamlanır.`;
+            let onceki = 0;
+            try { onceki = parseInt(localStorage.getItem(FAVCOZSAYI_KEY), 10) || 0; } catch (e) {}
+            document.getElementById("favCozSayi").value = Math.min(onceki || 100, d.toplam);
+            favCozOnizle();
+            document.getElementById("favCozModal").classList.remove("hidden");
+        }
+        function favCozBaslat() {
+            const n = parseInt(document.getElementById("favCozSayi").value, 10) || 0;
+            if (n < 1) { alert("Kaç soru çözeceğini yaz."); return; }
+            try { localStorage.setItem(FAVCOZSAYI_KEY, String(n)); } catch (e) {}
+            const tur = loadFavCozTur();
+            const secilen = favCozSec(n, tur);
+            if (!secilen.length) { alert("Favori soru yok!"); return; }
+            saveFavCozTur(tur);
+            document.getElementById("favCozModal").classList.add("hidden");
+            currentModeKey = "favcoz";
+            currentModeLabel = "⭐ Favorilerden Çöz";
+            activeQuestions = secilen; // ders sırasıyla (ders içinde karışık)
+            beginQuiz();
+        }
+        function resetFavCoz() {
+            if (!confirm("Favorilerden Çöz turları sıfırlansın mı? Tüm favoriler yeniden çözülmemiş sayılır.")) return;
+            saveFavCozTur({});
+            favCozOnizle();
+            renderFavCozInfo();
+        }
         function startFavDeneme() {
             if (resumeGate("favdeneme", "⭐ Favori Denemesi", startFavDeneme)) return;
             const tur = loadFavTur();
@@ -9196,6 +9345,7 @@
             const det = document.getElementById("favDenemeDetay");
             document.getElementById("favDenemeDetayIcerik").innerHTML = satirlar.join("");
             det.classList.toggle("hidden", !toplam);
+            renderFavCozInfo();
         }
 
         function karistirDizi(arr) {
@@ -9433,6 +9583,7 @@
             updateGlobalCounts();
             if (currentModeKey && (currentModeKey.indexOf("ders:") === 0 || currentModeKey.indexOf("dersyeni:") === 0 || currentModeKey === "deneme")) markSeen(currentQ);
             if (currentModeKey === "favdeneme") markFavSeen(currentQ);
+            if (currentModeKey === "favcoz") markFavCozSeen(currentQ);
             saveProgress(currentIndex + 1);
 
             if(currentQ.aciklama) {

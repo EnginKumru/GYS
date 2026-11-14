@@ -149,37 +149,44 @@
             </div>
         </div>
     </div>
-    <div id="printArea"></div>
+    <div id="printArea" class="pdoc"></div>
+    <div id="printOlcum" class="pdoc" aria-hidden="true"></div>
     <style>
         #printArea { display: none; }
+        #printOlcum { position: absolute; left: -10000px; top: 0; visibility: hidden; }
+        .pdoc { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 10.5pt; line-height: 1.45; }
+        .pdoc .ppage { width: 210mm; height: 296mm; padding: 10mm 11mm 0; box-sizing: border-box; position: relative; overflow: hidden; background: #fff; break-after: page; page-break-after: always; }
+        .pdoc .ppage:last-child { break-after: auto; page-break-after: auto; }
+        .pdoc .pcols { display: flex; gap: 8mm; }
+        .pdoc .pcol { width: 90mm; }
+        .pdoc .pcol + .pcol { position: relative; }
+        .pdoc .pcol + .pcol::before { content: ""; position: absolute; left: -4mm; top: 0; height: 268mm; border-left: 0.6px solid #000; }
+        .pdoc .pblok { display: flow-root; }
+        .pdoc .pfoot { position: absolute; left: 0; right: 0; bottom: 6mm; text-align: center; font-size: 9pt; }
+        .pdoc .ph { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+        .pdoc .ph-t { font-size: 15pt; font-weight: bold; }
+        .pdoc .ph-s { font-size: 9pt; }
+        .pdoc .pd { font-weight: bold; font-size: 9.5pt; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin: 4px 0 10px; }
+        .pdoc .pq { padding-bottom: 5mm; }
+        .pdoc .pq-stem { display: flex; gap: 8px; text-align: justify; }
+        .pdoc .pq-stem strong { font-weight: bold; }
+        .pdoc .pq-no { font-weight: bold; min-width: 22px; }
+        .pdoc .pq-ci { display: inline-block; font-size: 8pt; font-weight: bold; border: 1px solid #999; border-radius: 8px; padding: 0 5px; margin-bottom: 2px; }
+        .pdoc .pq-img { max-width: 100%; margin-top: 4px; }
+        .pdoc table { font-size: 9pt; border-collapse: collapse; margin: 4px 0; }
+        .pdoc td, .pdoc th { border: 1px solid #000; padding: 1px 4px; }
+        .pdoc .pq-opts { list-style: none; margin: 8px 0 0 30px; padding: 0; }
+        .pdoc .pq-opts li { display: flex; gap: 6px; margin-bottom: 3px; text-align: justify; }
+        .pdoc .pq-l { min-width: 18px; }
+        .pdoc .pend { text-align: center; font-weight: bold; font-size: 10pt; margin-top: 18px; }
+        .pdoc .pk h3, .pdoc .pa-h { text-align: center; font-size: 13pt; font-weight: bold; margin-bottom: 10px; }
+        .pdoc .pk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 10px; font-size: 11pt; }
+        .pdoc .pa-i { font-size: 9.5pt; padding-bottom: 8px; text-align: justify; }
         @media print {
-            @page { size: A4; margin: 14mm 12mm 16mm 12mm; @bottom-center { content: "Favori Denemesi – Sayfa " counter(page) " / " counter(pages); font: 9pt Arial, sans-serif; } }
-            body { background: #fff !important; display: block !important; min-height: 0 !important; }
+            @page { size: A4; margin: 0; }
+            html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; display: block !important; min-height: 0 !important; }
             body > *:not(#printArea) { display: none !important; }
-            #printArea { display: block !important; font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 10.5pt; line-height: 1.45; }
-            #printArea .ph { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
-            #printArea .ph-t { font-size: 15pt; font-weight: bold; }
-            #printArea .ph-s { font-size: 9pt; }
-            #printArea .pcols { column-count: 2; column-gap: 9mm; }
-            #printArea .pd { break-after: avoid; font-weight: bold; font-size: 9.5pt; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; margin: 4px 0 10px; }
-            #printArea .pq { break-inside: avoid; page-break-inside: avoid; margin-bottom: 16px; }
-            #printArea .pq-stem { display: flex; gap: 8px; text-align: justify; }
-            #printArea .pq-stem strong { font-weight: bold; }
-            #printArea .pq-no { font-weight: bold; min-width: 22px; }
-            #printArea .pq-ci { display: inline-block; font-size: 8pt; font-weight: bold; border: 1px solid #999; border-radius: 8px; padding: 0 5px; margin-bottom: 2px; }
-            #printArea .pq-img { max-width: 100%; margin-top: 4px; }
-            #printArea table { font-size: 9pt; border-collapse: collapse; margin: 4px 0; }
-            #printArea td, #printArea th { border: 1px solid #000; padding: 1px 4px; }
-            #printArea .pq-opts { list-style: none; margin: 8px 0 0 30px; padding: 0; }
-            #printArea .pq-opts li { display: flex; gap: 6px; margin-bottom: 3px; text-align: justify; }
-            #printArea .pq-l { min-width: 18px; }
-            #printArea .pend { break-inside: avoid; text-align: center; font-weight: bold; font-size: 10pt; margin-top: 18px; }
-            #printArea .pk { break-before: page; }
-            #printArea .pk h3, #printArea .pa h3 { text-align: center; font-size: 13pt; font-weight: bold; margin-bottom: 10px; }
-            #printArea .pk-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 10px; font-size: 11pt; }
-            #printArea .pa { break-before: page; column-count: 2; column-gap: 9mm; font-size: 9.5pt; }
-            #printArea .pa h3 { column-span: all; }
-            #printArea .pa-i { break-inside: avoid; margin-bottom: 8px; text-align: justify; }
+            #printArea { display: block !important; }
         }
     </style>
     <!-- Devam et / Baştan başla penceresi -->
@@ -9054,6 +9061,30 @@
         function openPrintModal() {
             document.getElementById("printModal").classList.remove("hidden");
         }
+        // Yazdırma sayfalarını kendimiz böleriz: her soru tek parça kalır, A4 iki sütun (kitapçık düzeni)
+        function sayfala(bloklar, ustHtml) {
+            const olc = document.getElementById("printOlcum");
+            const PX = 96 / 25.4; // 1mm kaç px
+            const ALAN = 268; // sütunun kullanılabilir yüksekliği (mm)
+            olc.innerHTML = `<div class="pblok" style="width:188mm">${ustHtml || ""}</div>` + bloklar.map(b => `<div class="pblok" style="width:90mm">${b}</div>`).join("");
+            const kutular = [...olc.children];
+            const ustH = ustHtml ? kutular[0].offsetHeight / PX + 2 : 0;
+            const hs = kutular.slice(1).map(k => k.offsetHeight / PX);
+            olc.innerHTML = "";
+            const sayfalar = [];
+            let sayfa, kol, kalan;
+            const yeni = ilk => { sayfa = { ust: ilk ? ustHtml : "", kols: [[], []] }; sayfalar.push(sayfa); kol = 0; kalan = ALAN - (ilk ? ustH : 0); };
+            yeni(true);
+            bloklar.forEach((b, i) => {
+                if (hs[i] > kalan && sayfa.kols[kol].length) {
+                    if (kol === 0) { kol = 1; kalan = ALAN - (sayfa.ust ? ustH : 0); }
+                    else yeni(false);
+                }
+                sayfa.kols[kol].push(`<div class="pblok">${b}</div>`);
+                kalan -= hs[i];
+            });
+            return sayfalar;
+        }
         function printFavDeneme() {
             document.getElementById("printModal").classList.add("hidden");
             const gorulduSay = document.getElementById("printSeen").checked;
@@ -9072,7 +9103,7 @@
             const dersAdi = {};
             veriTabani.forEach(d => { dersAdi[d.id] = d.dersAdi.replace(/^\d+\.\s*/, ""); });
             let oncekiDers = null;
-            const sorularHtml = secilen.map((q, i) => {
+            const soruBloklari = secilen.map((q, i) => {
                 const dId = dersOfQuestion(q.id);
                 const baslik = dId !== oncekiDers ? `<div class="pd">${escapeHtml(dersAdi[dId] || "")}</div>` : "";
                 oncekiDers = dId;
@@ -9082,12 +9113,16 @@
                 const gorsel = gorselHavuzu[q.id] ? `<img src="${gorselHavuzu[q.id]}" class="pq-img">` : "";
                 return baslik + `<div class="pq"><div class="pq-stem"><span class="pq-no">${i + 1}.</span><div>${CIKMA_IHTIMALI.has(q.id) ? '<span class="pq-ci">★ Çıkma ihtimalli</span>' : ""}${formatSoruMetni(q.soruMetni)}${gorsel}</div></div>` +
                     `<ol class="pq-opts">${secenekler.map((o, k) => `<li><span class="pq-l">${harfler[k]})</span><span>${escapeHtml(o)}</span></li>`).join("")}</ol></div>`;
-            }).join("");
+            });
             const anahtarHtml = `<div class="pk"><h3>CEVAP ANAHTARI</h3><div class="pk-grid">${anahtar.map((h, i) => `<div><b>${i + 1}.</b> ${h}</div>`).join("")}</div></div>`;
-            const aciklamaHtml = aciklamaEkle ? `<div class="pa"><h3>AÇIKLAMALAR</h3>${secilen.map((q, i) => `<div class="pa-i"><b>${i + 1}. (${anahtar[i]})</b> ${escapeHtml(q.aciklama || "").replace(/\n/g, "<br>")}</div>`).join("")}</div>` : "";
             const alan = document.getElementById("printArea");
-            alan.innerHTML = `<div class="ph"><div class="ph-t">⭐ FAVORİ DENEMESİ</div><div class="ph-s">${tarih} · ${secilen.length} soru · GYS Soru Bankası</div></div>` +
-                `<div class="pcols">${sorularHtml}<div class="pend">TEST BİTTİ<br>CEVAPLARINIZI KONTROL EDİNİZ</div></div>` + anahtarHtml + aciklamaHtml;
+            const ust = `<div class="ph"><div class="ph-t">⭐ FAVORİ DENEMESİ</div><div class="ph-s">${tarih} · ${secilen.length} soru · GYS Soru Bankası</div></div>`;
+            const sayfalar = [];
+            sayfalar.push(...sayfala([...soruBloklari, `<div class="pend">TEST BİTTİ<br>CEVAPLARINIZI KONTROL EDİNİZ</div>`], ust));
+            sayfalar.push({ ust: anahtarHtml, kols: null });
+            if (aciklamaEkle) sayfalar.push(...sayfala(secilen.map((q, i) => `<div class="pa-i"><b>${i + 1}. (${anahtar[i]})</b> ${escapeHtml(q.aciklama || "").replace(/\n/g, "<br>")}</div>`), `<div class="pa-h">AÇIKLAMALAR</div>`));
+            const N = sayfalar.length;
+            alan.innerHTML = sayfalar.map((s, i) => `<div class="ppage">${s.ust || ""}${s.kols ? `<div class="pcols">${s.kols.map(k => `<div class="pcol">${k.join("")}</div>`).join("")}</div>` : ""}<div class="pfoot">${i + 1} / ${N}</div></div>`).join("");
             setTimeout(() => window.print(), 300);
         }
         function markFavSeen(q) {

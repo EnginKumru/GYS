@@ -41,11 +41,90 @@
                 <button onclick="resetFavDeneme()" class="mt-2 text-[11px] underline text-amber-700">Tüm turları sıfırla</button>
             </details>
 
+            <div class="bg-gradient-to-r from-violet-600 to-fuchsia-500 p-5 rounded-2xl shadow-md text-white text-center cursor-pointer hover:opacity-95 transition" onclick="kartAc()">
+                <h2 class="text-xl font-bold">🃏 Edebiyat Kartları</h2>
+                <p class="text-xs mt-1 text-violet-100">Eser gelir, yazarı tahmin et, kartı çevir · bilemediklerin daha sık gelir</p>
+                <p id="kartInfo" class="text-[11px] mt-1 font-semibold text-violet-50"></p>
+            </div>
+
             <div id="resumeBox" class="space-y-2 hidden"></div>
 
             <h2 class="text-base font-bold text-slate-700 mt-4 mb-2">Ders Seçerek Çalış (21 Ders):</h2>
             <div id="courseList" class="space-y-2 pb-10"></div>
         </div>
+
+        <!-- KARTLAR EKRANI -->
+        <div id="kartScreen" class="hidden my-4 space-y-3">
+            <div class="flex justify-between items-center">
+                <button onclick="goHome()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">🏠 Çıkış</button>
+                <span class="font-bold text-slate-700 text-sm">🃏 Edebiyat Kartları</span>
+                <button onclick="kartAyarGoster()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">⚙️ Ayarlar</button>
+            </div>
+            <div id="kartAyar" class="bg-white rounded-2xl shadow-xl p-5 space-y-3">
+                <div>
+                    <p class="text-xs font-bold text-slate-700 mb-1">Deste</p>
+                    <div class="grid grid-cols-2 gap-2" data-grup="deste">
+                        <button data-v="kalin" class="kart-sec">Kalın eserler</button>
+                        <button data-v="once" class="kart-sec">Önce bunlar</button>
+                        <button data-v="hepsi" class="kart-sec">Hepsi</button>
+                        <button data-v="ilk" class="kart-sec">İlkler</button>
+                    </div>
+                </div>
+                <div id="kartYonKutu">
+                    <p class="text-xs font-bold text-slate-700 mb-1">Yön</p>
+                    <div class="grid grid-cols-3 gap-2" data-grup="yon">
+                        <button data-v="ey" class="kart-sec">Eser → Yazar</button>
+                        <button data-v="ye" class="kart-sec">Yazar → Eser</button>
+                        <button data-v="mix" class="kart-sec">Karışık</button>
+                    </div>
+                </div>
+                <div id="kartAlanKutu">
+                    <p class="text-xs font-bold text-slate-700 mb-1">Bölüm</p>
+                    <div class="grid grid-cols-3 gap-2" data-grup="alan">
+                        <button data-v="Türk" class="kart-sec">Türk</button>
+                        <button data-v="Dünya" class="kart-sec">Dünya</button>
+                        <button data-v="hepsi" class="kart-sec">İkisi</button>
+                    </div>
+                </div>
+                <p id="kartOzet" class="text-xs text-slate-600"></p>
+                <button onclick="kartBasla()" class="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold">Başla</button>
+                <button onclick="kartSifirla()" class="w-full text-[11px] underline text-slate-400">Bu destenin ilerlemesini sıfırla</button>
+            </div>
+            <div id="kartOyun" class="hidden space-y-3">
+                <div class="flex justify-between text-[11px] font-semibold text-slate-500 px-1">
+                    <span id="kartSayac"></span><span id="kartSkor"></span>
+                </div>
+                <div class="kart-sahne" onclick="kartCevir()">
+                    <div id="kartIc" class="kart-ic">
+                        <div class="kart-yuz kart-on"><p id="kartOnUst" class="text-[11px] font-semibold text-violet-500 mb-3"></p><p id="kartOnMetin" class="text-2xl font-bold text-slate-800 leading-snug"></p><p class="text-[11px] text-slate-400 mt-6">Cevabı aklından söyle, sonra dokun</p></div>
+                        <div class="kart-yuz kart-arka"><p id="kartArkaUst" class="text-[11px] font-semibold text-violet-100 mb-3"></p><div id="kartArkaMetin" class="text-xl font-bold leading-snug"></div><p id="kartArkaIpucu" class="text-xs text-violet-100 mt-4"></p></div>
+                    </div>
+                </div>
+                <div id="kartButonlar" class="grid grid-cols-2 gap-3 invisible">
+                    <button onclick="kartCevap(false)" class="py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold">✗ Bilemedim</button>
+                    <button onclick="kartCevap(true)" class="py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold">✓ Bildim</button>
+                </div>
+            </div>
+            <div id="kartBitti" class="hidden bg-white rounded-2xl shadow-xl p-6 text-center space-y-3">
+                <p class="text-3xl">🎉</p>
+                <p class="font-bold text-slate-800">Deste bitti</p>
+                <p id="kartBittiOzet" class="text-sm text-slate-600"></p>
+                <button onclick="kartBasla(true)" id="kartTekrarBtn" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold">Bilemediklerimi tekrar et</button>
+                <button onclick="kartBasla()" class="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-bold">Desteyi yeniden başlat</button>
+                <button onclick="kartAyarGoster()" class="w-full py-2 text-slate-500 text-xs">Ayarlara dön</button>
+            </div>
+        </div>
+        <style>
+            .kart-sec { padding: 8px 4px; border-radius: 10px; font-size: 12px; font-weight: 700; background: #f1f5f9; color: #334155; border: 2px solid transparent; }
+            .kart-sec.secili { background: #ede9fe; color: #5b21b6; border-color: #7c3aed; }
+            .kart-sahne { perspective: 1200px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+            .kart-ic { position: relative; min-height: 320px; transition: transform .45s; transform-style: preserve-3d; }
+            .kart-ic.cevrik { transform: rotateY(180deg); }
+            .kart-yuz { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; padding: 28px 22px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,.12); }
+            .kart-on { background: #fff; border: 2px solid #ddd6fe; }
+            .kart-arka { background: linear-gradient(135deg,#7c3aed,#c026d3); color: #fff; transform: rotateY(180deg); }
+            .kart-arka b { color: #fef08a; }
+        </style>
 
         <!-- 2. DERS DETAY / MENÜ EKRANI -->
         <div id="courseDetailScreen" class="bg-white rounded-2xl shadow-xl p-6 hidden my-4 space-y-4">
@@ -8907,6 +8986,8 @@
             selectedCourseId = null;
             renderResumeBoxes();
             document.getElementById("homeScreen").classList.remove("hidden");
+            document.getElementById("kartScreen").classList.add("hidden");
+            kartInfoYaz();
             document.getElementById("courseDetailScreen").classList.add("hidden");
             document.getElementById("quizContainer").classList.add("hidden");
             document.getElementById("resultContainer").classList.add("hidden");
@@ -9640,6 +9721,121 @@
             }
         }
 
+
+        // ===== EDEBİYAT KARTLARI (çevirmeli kart, Leitner kutuları) =====
+        const KART_VERI = {"yazarlar": [{"y": "Yusuf Has Hacib", "e": ["Kutadgu Bilig"], "k": ["Kutadgu Bilig"], "i": "İlk siyasetname; \"mutluluk veren bilgi\"", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Kaşgarlı Mahmud", "e": ["Divanü Lügati't-Türk"], "k": ["Divanü Lügati't-Türk"], "i": "İlk Türkçe sözlük; Araplara Türkçe öğretmek için", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Ahmet Yesevi", "e": ["Divan-ı Hikmet"], "k": ["Divan-ı Hikmet"], "i": "İlk mutasavvıf; şiirlerine \"hikmet\" denir", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Mevlana", "e": ["Mesnevi", "Divan-ı Kebir", "Fihi Mafih"], "k": ["Mesnevi"], "i": "Farsça yazdı; Konya", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Yunus Emre", "e": ["Divan", "Risaletü'n-Nushiyye"], "k": ["Divan"], "i": "Sade Türkçe, ilahi aşk", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Fuzuli", "e": ["Leyla ile Mecnun", "Su Kasidesi", "Şikâyetname"], "k": ["Leyla ile Mecnun"], "i": "Aşk ve ıstırap şairi", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Evliya Çelebi", "e": ["Seyahatname"], "k": ["Seyahatname"], "i": "10 ciltlik gezi yazısı", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Şeyh Galip", "e": ["Hüsn ü Aşk"], "k": ["Hüsn ü Aşk"], "i": "Divan edebiyatının son büyük şairi", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Anonim", "e": ["Dede Korkut Hikâyeleri"], "k": ["Dede Korkut Hikâyeleri"], "i": "12 hikâye; destandan halk hikâyesine geçiş", "b": "Eski Türk edebiyatı", "a": "Türk", "o": 1}, {"y": "Şinasi", "e": ["Şair Evlenmesi", "Tercüman-ı Ahval"], "k": ["Şair Evlenmesi"], "i": "İlk tiyatro, ilk özel gazete, ilk makale", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Namık Kemal", "e": ["İntibah", "Cezmi", "Vatan yahut Silistre"], "k": ["İntibah"], "i": "Vatan şairi; ilk edebî roman ve ilk tarihî roman", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Şemsettin Sami", "e": ["Taaşşuk-ı Talat ve Fitnat", "Kamus-ı Türkî"], "k": ["Taaşşuk-ı Talat ve Fitnat"], "i": "İlk yerli roman; sözlükçü", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Ahmet Mithat Efendi", "e": ["Felatun Bey ile Rakım Efendi", "Hasan Mellah", "Letaif-i Rivayat"], "k": ["Felatun Bey ile Rakım Efendi"], "i": "\"Hace-i evvel\"; halka öğretmek için yazar", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Recaizade Mahmut Ekrem", "e": ["Araba Sevdası", "Talim-i Edebiyat"], "k": ["Araba Sevdası"], "i": "İlk realist roman; Bihruz Bey", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Samipaşazade Sezai", "e": ["Sergüzeşt", "Küçük Şeyler"], "k": ["Sergüzeşt"], "i": "Esir kız Dilber; ilk Batılı hikâyeler", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Abdülhak Hamit Tarhan", "e": ["Makber", "Sahra", "Eşber"], "k": ["Makber"], "i": "\"Şair-i Azam\"; eşinin ölümüne Makber", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Tevfik Fikret", "e": ["Rübab-ı Şikeste", "Haluk'un Defteri", "Şermin"], "k": ["Rübab-ı Şikeste"], "i": "Servetifünun şairi; Sis şiiri", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Halid Ziya Uşaklıgil", "e": ["Aşk-ı Memnu", "Mai ve Siyah", "Kırık Hayatlar"], "k": ["Aşk-ı Memnu"], "i": "Batılı anlamda ilk romanlar", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Mehmet Rauf", "e": ["Eylül"], "k": ["Eylül"], "i": "İlk psikolojik roman", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Hüseyin Rahmi Gürpınar", "e": ["Şıpsevdi", "Mürebbiye", "Gulyabani"], "k": ["Şıpsevdi"], "i": "Mizahla toplum eleştirisi", "b": "Tanzimat ve Servetifünun", "a": "Türk", "o": 1}, {"y": "Ömer Seyfettin", "e": ["Kaşağı", "Bomba", "Forsa", "Efruz Bey"], "k": ["Kaşağı"], "i": "Hikâyeci; \"Yeni Lisan\" makalesi", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Ziya Gökalp", "e": ["Türkçülüğün Esasları", "Kızıl Elma", "Altın Işık"], "k": ["Türkçülüğün Esasları"], "i": "Türkçülüğün fikir babası", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Mehmet Akif Ersoy", "e": ["Safahat"], "k": ["Safahat"], "i": "İstiklal Marşı şairi; marş Safahat'ta yoktur", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Yahya Kemal Beyatlı", "e": ["Kendi Gök Kubbemiz", "Eski Şiirin Rüzgârıyla", "Aziz İstanbul"], "k": ["Kendi Gök Kubbemiz"], "i": "İstanbul ve Osmanlı şairi", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Halide Edib Adıvar", "e": ["Sinekli Bakkal", "Ateşten Gömlek", "Vurun Kahpeye", "Handan"], "k": ["Sinekli Bakkal"], "i": "Kurtuluş Savaşı romanları", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Yakup Kadri Karaosmanoğlu", "e": ["Yaban", "Kiralık Konak", "Sodom ve Gomore", "Nur Baba"], "k": ["Yaban"], "i": "Her romanı bir dönemi anlatır", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Reşat Nuri Güntekin", "e": ["Çalıkuşu", "Yaprak Dökümü", "Yeşil Gece", "Acımak"], "k": ["Çalıkuşu"], "i": "Anadolu ve öğretmen", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Refik Halit Karay", "e": ["Memleket Hikâyeleri", "Sürgün"], "k": ["Memleket Hikâyeleri"], "i": "Anadolu'yu anlatan ilk hikâyeler", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Faruk Nafiz Çamlıbel", "e": ["Han Duvarları", "Çoban Çeşmesi"], "k": ["Han Duvarları"], "i": "Beş Hececiler; ANKÜSEM'de çıkmış soru", "b": "Millî Edebiyat", "a": "Türk", "o": 1}, {"y": "Peyami Safa", "e": ["Dokuzuncu Hariciye Koğuşu", "Fatih-Harbiye", "Yalnızız"], "k": ["Dokuzuncu Hariciye Koğuşu"], "i": "Doğu-Batı çatışması, psikoloji", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Sabahattin Ali", "e": ["Kuyucaklı Yusuf", "Kürk Mantolu Madonna", "İçimizdeki Şeytan"], "k": ["Kuyucaklı Yusuf"], "i": "Toplumcu gerçekçi", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Ahmet Hamdi Tanpınar", "e": ["Huzur", "Saatleri Ayarlama Enstitüsü", "Beş Şehir"], "k": ["Huzur"], "i": "Zaman, rüya, medeniyet", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Sait Faik Abasıyanık", "e": ["Semaver", "Sarnıç", "Son Kuşlar"], "k": ["Semaver"], "i": "İstanbul, balıkçılar, durum hikâyesi", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Yaşar Kemal", "e": ["İnce Memed", "Yer Demir Gök Bakır", "Orta Direk"], "k": ["İnce Memed"], "i": "Çukurova, eşkıya", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Orhan Kemal", "e": ["Bereketli Topraklar Üzerinde", "Baba Evi", "Murtaza"], "k": ["Bereketli Topraklar Üzerinde"], "i": "İşçiler, Adana", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Kemal Tahir", "e": ["Devlet Ana", "Yorgun Savaşçı"], "k": ["Devlet Ana"], "i": "Tarihî roman, Osmanlı'nın kuruluşu", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Tarık Buğra", "e": ["Küçük Ağa", "Osmancık"], "k": ["Küçük Ağa"], "i": "Kurtuluş Savaşı'na kasabadan bakış", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Necip Fazıl Kısakürek", "e": ["Çile", "Kaldırımlar", "Bir Adam Yaratmak"], "k": ["Çile"], "i": "Mistik şair; \"Kaldırımlar şairi\"", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Nazım Hikmet", "e": ["Memleketimden İnsan Manzaraları", "Kuvâyi Milliye Destanı"], "k": ["Memleketimden İnsan Manzaraları"], "i": "Serbest nazım, toplumcu şiir", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Orhan Veli Kanık", "e": ["Garip"], "k": ["Garip"], "i": "Garip akımı (Oktay Rifat ve Melih Cevdet ile)", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Cahit Sıtkı Tarancı", "e": ["Otuz Beş Yaş"], "k": ["Otuz Beş Yaş"], "i": "\"Yaş otuz beş, yolun yarısı eder\"", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Oğuz Atay", "e": ["Tutunamayanlar", "Tehlikeli Oyunlar"], "k": ["Tutunamayanlar"], "i": "Modernist roman", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Orhan Pamuk", "e": ["Benim Adım Kırmızı", "Kara Kitap", "Kar"], "k": ["Benim Adım Kırmızı"], "i": "2006 Nobel Edebiyat Ödülü", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Cengiz Aytmatov", "e": ["Gün Olur Asra Bedel", "Beyaz Gemi", "Toprak Ana"], "k": ["Gün Olur Asra Bedel"], "i": "Kırgız yazar; \"mankurt\"", "b": "Cumhuriyet dönemi", "a": "Türk", "o": 1}, {"y": "Dostoyevski", "e": ["Suç ve Ceza", "Karamazov Kardeşler", "Budala", "Yeraltından Notlar"], "k": ["Suç ve Ceza"], "i": "Suçluluk, vicdan; Raskolnikov", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Tolstoy", "e": ["Savaş ve Barış", "Anna Karenina", "Diriliş"], "k": ["Savaş ve Barış"], "i": "Geniş toplum panoraması", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Gogol", "e": ["Ölü Canlar", "Müfettiş", "Palto"], "k": ["Ölü Canlar"], "i": "Hiciv; \"Hepimiz Gogol'ün Palto'sundan çıktık\"", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Puşkin", "e": ["Yüzbaşının Kızı", "Yevgeni Onegin"], "k": ["Yüzbaşının Kızı"], "i": "Rus edebiyatının kurucusu", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Turgenyev", "e": ["Babalar ve Oğullar"], "k": ["Babalar ve Oğullar"], "i": "Kuşak çatışması, nihilizm", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Çehov", "e": ["Vişne Bahçesi", "Martı", "Vanya Dayı"], "k": ["Vişne Bahçesi"], "i": "Durum hikâyesi; Sait Faik'in ustası sayılır", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Maksim Gorki", "e": ["Ana"], "k": ["Ana"], "i": "Toplumcu gerçekçilik", "b": "Rus edebiyatı", "a": "Dünya", "o": 1}, {"y": "Victor Hugo", "e": ["Sefiller", "Notre Dame'ın Kamburu"], "k": ["Sefiller"], "i": "Romantizm; Jean Valjean", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Balzac", "e": ["Goriot Baba", "Vadideki Zambak", "Eugénie Grandet"], "k": ["Goriot Baba"], "i": "Realizm; \"İnsanlık Komedyası\"", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Stendhal", "e": ["Kırmızı ve Siyah", "Parma Manastırı"], "k": ["Kırmızı ve Siyah"], "i": "Realizmin öncüsü", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Flaubert", "e": ["Madam Bovary"], "k": ["Madam Bovary"], "i": "Realizm; hayal ile gerçek", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Emile Zola", "e": ["Germinal", "Nana"], "k": ["Germinal"], "i": "Natüralizm; maden işçileri", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Molière", "e": ["Cimri", "Tartuffe", "Hastalık Hastası"], "k": ["Cimri"], "i": "Komedi", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Albert Camus", "e": ["Yabancı", "Veba"], "k": ["Yabancı"], "i": "Absürt, varoluşçuluk", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Saint-Exupéry", "e": ["Küçük Prens"], "k": ["Küçük Prens"], "i": "Pilot yazar", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Montaigne", "e": ["Denemeler"], "k": ["Denemeler"], "i": "Deneme türünün kurucusu", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "La Fontaine", "e": ["Fabller"], "k": ["Fabller"], "i": "Fabl türü", "b": "Fransız edebiyatı", "a": "Dünya", "o": 1}, {"y": "Shakespeare", "e": ["Hamlet", "Macbeth", "Othello", "Kral Lear", "Romeo ve Juliet"], "k": ["Hamlet"], "i": "Trajedi", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Daniel Defoe", "e": ["Robinson Crusoe"], "k": ["Robinson Crusoe"], "i": "Issız ada", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Jonathan Swift", "e": ["Gulliver'in Gezileri"], "k": ["Gulliver'in Gezileri"], "i": "Hiciv; cüceler ve devler", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Charles Dickens", "e": ["Oliver Twist", "İki Şehrin Hikâyesi", "David Copperfield"], "k": ["Oliver Twist"], "i": "Yoksul çocuklar, Londra", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "George Orwell", "e": ["1984", "Hayvan Çiftliği"], "k": ["1984"], "i": "Distopya; \"Büyük Birader\"", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Mark Twain", "e": ["Tom Sawyer", "Huckleberry Finn"], "k": ["Tom Sawyer"], "i": "Mississippi, çocuk kahramanlar", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Jack London", "e": ["Beyaz Diş", "Martin Eden", "Vahşetin Çağrısı"], "k": ["Beyaz Diş"], "i": "Doğa ve mücadele", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Hemingway", "e": ["Yaşlı Adam ve Deniz", "Silahlara Veda", "Çanlar Kimin İçin Çalıyor"], "k": ["Yaşlı Adam ve Deniz"], "i": "Savaş ve yalnız kahraman", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "John Steinbeck", "e": ["Gazap Üzümleri", "Fareler ve İnsanlar"], "k": ["Gazap Üzümleri"], "i": "Göçmen işçiler", "b": "İngiliz ve Amerikan edebiyatı", "a": "Dünya", "o": 1}, {"y": "Homeros (Yunan)", "e": ["İlyada", "Odysseia"], "k": ["İlyada"], "i": "Truva Savaşı destanları", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Dante (İtalyan)", "e": ["İlahi Komedya"], "k": ["İlahi Komedya"], "i": "Cehennem, Araf, Cennet", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Cervantes (İspanyol)", "e": ["Don Kişot"], "k": ["Don Kişot"], "i": "İlk modern roman sayılır", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Goethe (Alman)", "e": ["Faust", "Genç Werther'in Acıları"], "k": ["Faust"], "i": "Şeytanla anlaşma", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Kafka (Çek, Almanca yazdı)", "e": ["Dönüşüm", "Dava", "Şato"], "k": ["Dönüşüm"], "i": "Böceğe dönüşen Gregor Samsa", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Gabriel García Márquez (Kolombiyalı)", "e": ["Yüzyıllık Yalnızlık"], "k": ["Yüzyıllık Yalnızlık"], "i": "Büyülü gerçekçilik", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Firdevsi (İranlı)", "e": ["Şehname"], "k": ["Şehname"], "i": "İran'ın millî destanı", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Sadi (İranlı)", "e": ["Bostan", "Gülistan"], "k": ["Bostan"], "i": "Öğüt veren eserler", "b": "Diğer ülkeler", "a": "Dünya", "o": 1}, {"y": "Edip Ahmet Yükneki", "e": ["Atabetü'l-Hakayık"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Ali Şir Nevai", "e": ["Muhakemetü'l-Lügateyn"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Süleyman Çelebi", "e": ["Mevlid (Vesiletü'n-Necat)"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Kâtip Çelebi", "e": ["Keşfü'z-Zünun", "Cihannüma"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Nabi", "e": ["Hayriyye"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Ziya Paşa", "e": ["Terkib-i Bent", "Zafername", "Harabat"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Nabizade Nâzım", "e": ["Karabibik", "Zehra"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Cenap Şahabettin", "e": ["Hac Yolunda"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Ahmet Haşim", "e": ["Piyale", "Göl Saatleri"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Mehmet Emin Yurdakul", "e": ["Türkçe Şiirler"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Ahmet Rasim", "e": ["Şehir Mektupları"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Abdülhak Şinasi Hisar", "e": ["Fahim Bey ve Biz", "Çamlıca'daki Eniştemiz"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Memduh Şevket Esendal", "e": ["Ayaşlı ile Kiracıları"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Mithat Cemal Kuntay", "e": ["Üç İstanbul"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Falih Rıfkı Atay", "e": ["Çankaya", "Zeytindağı"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Arif Nihat Asya", "e": ["Bayrak"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Attilâ İlhan", "e": ["Ben Sana Mecburum", "Kurtlar Sofrası"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Aziz Nesin", "e": ["Zübük", "Yaşar Ne Yaşar Ne Yaşamaz"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Rıfat Ilgaz", "e": ["Hababam Sınıfı"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Fakir Baykurt", "e": ["Yılanların Öcü"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Yusuf Atılgan", "e": ["Aylak Adam", "Anayurt Oteli"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Adalet Ağaoğlu", "e": ["Ölmeye Yatmak"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Haldun Taner", "e": ["Keşanlı Ali Destanı"], "k": [], "i": "", "b": "", "a": "Türk", "o": 2}, {"y": "Sophokles", "e": ["Kral Oidipus"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Ezop", "e": ["Fabllar"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Beydeba", "e": ["Kelile ve Dimne"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Ömer Hayyam", "e": ["Rubailer"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Boccaccio", "e": ["Decameron"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Machiavelli", "e": ["Prens"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Thomas More", "e": ["Ütopya"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Alexandre Dumas", "e": ["Üç Silahşörler", "Monte Kristo Kontu"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Jules Verne", "e": ["Denizler Altında Yirmi Bin Fersah", "Seksen Günde Devriâlem"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Jane Austen", "e": ["Gurur ve Önyargı"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Emily Brontë", "e": ["Uğultulu Tepeler"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Oscar Wilde", "e": ["Dorian Gray'in Portresi"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Herman Melville", "e": ["Moby Dick"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Aldous Huxley", "e": ["Cesur Yeni Dünya"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "James Joyce", "e": ["Ulysses"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Marcel Proust", "e": ["Kayıp Zamanın İzinde"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Thomas Mann", "e": ["Büyülü Dağ", "Buddenbrooklar"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Stefan Zweig", "e": ["Satranç"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}, {"y": "Nikos Kazancakis", "e": ["Zorba"], "k": [], "i": "", "b": "", "a": "Dünya", "o": 2}], "ilkler": [{"ilk": "İlk yerli roman", "eser": "Taaşşuk-ı Talat ve Fitnat", "yazar": "Şemsettin Sami"}, {"ilk": "İlk çeviri roman", "eser": "Telemak", "yazar": "Yusuf Kâmil Paşa"}, {"ilk": "İlk edebî roman", "eser": "İntibah", "yazar": "Namık Kemal"}, {"ilk": "İlk tarihî roman", "eser": "Cezmi", "yazar": "Namık Kemal"}, {"ilk": "İlk realist roman", "eser": "Araba Sevdası", "yazar": "Recaizade Mahmut Ekrem"}, {"ilk": "İlk köy romanı", "eser": "Karabibik", "yazar": "Nabizade Nâzım"}, {"ilk": "İlk psikolojik roman", "eser": "Eylül", "yazar": "Mehmet Rauf"}, {"ilk": "İlk tiyatro", "eser": "Şair Evlenmesi", "yazar": "Şinasi"}, {"ilk": "İlk sahnelenen tiyatro", "eser": "Vatan yahut Silistre", "yazar": "Namık Kemal"}, {"ilk": "İlk hikâye örnekleri", "eser": "Letaif-i Rivayat", "yazar": "Ahmet Mithat Efendi"}, {"ilk": "Batılı anlamda ilk hikâyeler", "eser": "Küçük Şeyler", "yazar": "Samipaşazade Sezai"}, {"ilk": "İlk özel gazete", "eser": "Tercüman-ı Ahval", "yazar": "Şinasi ve Agâh Efendi"}, {"ilk": "İlk resmî gazete", "eser": "Takvim-i Vekayi", "yazar": "Devlet eliyle, 1831"}, {"ilk": "İlk makale", "eser": "Tercüman-ı Ahval Mukaddimesi", "yazar": "Şinasi"}, {"ilk": "İlk Türkçe sözlük", "eser": "Divanü Lügati't-Türk", "yazar": "Kaşgarlı Mahmud"}, {"ilk": "İlk siyasetname", "eser": "Kutadgu Bilig", "yazar": "Yusuf Has Hacib"}, {"ilk": "İlk yazılı belgeler", "eser": "Orhun Abideleri", "yazar": "Göktürk dönemi"}, {"ilk": "Nobel alan ilk Türk yazar", "eser": "2006 Nobel Edebiyat Ödülü", "yazar": "Orhan Pamuk"}]};
+        const KART_KEY = "gys_kartlar", KART_AYAR_KEY = "gys_kart_ayar";
+        let kartAyar = { deste: "kalin", yon: "ey", alan: "hepsi" };
+        try { Object.assign(kartAyar, JSON.parse(localStorage.getItem(KART_AYAR_KEY)) || {}); } catch (e) {}
+        let kartKuyruk = [], kartSimdi = null, kartBildi = 0, kartBilemedi = new Set(), kartToplam = 0, kartCevrik = false;
+        function kartKutular() { try { return JSON.parse(localStorage.getItem(KART_KEY)) || {}; } catch (e) { return {}; } }
+        function kartKutuYaz(o) { try { localStorage.setItem(KART_KEY, JSON.stringify(o)); } catch (e) {} }
+        function kartEsc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+        // Ayarlara göre deste kartlarını üretir
+        function kartDeste(yon) {
+            const a = kartAyar;
+            if (a.deste === "ilk") return KART_VERI.ilkler.map(x => ({ id: "ilk:" + x.ilk, on: x.ilk, onUst: "İlkler", arka: `${kartEsc(x.eser)}<div class="text-sm font-semibold mt-2 text-violet-100">${kartEsc(x.yazar)}</div>`, arkaUst: "", ipucu: "" }));
+            const yazarlar = KART_VERI.yazarlar.filter(y => (a.alan === "hepsi" || y.a === a.alan) && (a.deste === "hepsi" || y.o === 1));
+            const kartlar = [];
+            yazarlar.forEach(y => {
+                const ust = (y.b || (y.a === "Türk" ? "Türk edebiyatı" : "Dünya edebiyatı"));
+                const ey = () => (a.deste === "kalin" ? y.k : y.e).forEach(e => kartlar.push({ id: "ey:" + e + "|" + y.y, on: e, onUst: "Bu eser kimin?", arka: kartEsc(y.y), arkaUst: ust, ipucu: y.i }));
+                const ye = () => kartlar.push({ id: "ye:" + y.y, on: y.y, onUst: "Eserleri neler?", arka: y.e.map(e => y.k.includes(e) ? `<b>${kartEsc(e)}</b>` : kartEsc(e)).join("<br>"), arkaUst: ust, ipucu: y.i });
+                const yy = yon || a.yon;
+                if (yy === "ey") ey(); else if (yy === "ye") ye();
+            });
+            return kartlar;
+        }
+        function kartTumKartlar() {
+            if (kartAyar.yon !== "mix" || kartAyar.deste === "ilk") return kartDeste();
+            // karışık: her yazar için rastgele bir yön
+            const ey = kartDeste("ey"), ye = kartDeste("ye");
+            const yazarYon = {};
+            ye.forEach(k => { yazarYon[k.on] = Math.random() < 0.5 ? "ey" : "ye"; });
+            return ey.filter(k => yazarYon[k.id.split("|")[1]] === "ey").concat(ye.filter(k => yazarYon[k.on] === "ye"));
+        }
+        function kartOgrenilen(kartlar) { const k = kartKutular(); return kartlar.filter(x => (k[x.id] || 0) >= 3).length; }
+        function kartInfoYaz() {
+            const el = document.getElementById("kartInfo"); if (!el) return;
+            const k = kartKutular(); const n = Object.values(k).filter(v => v >= 3).length;
+            el.innerText = n ? `${n} kart öğrenildi (3 kez üst üste bilinen)` : "78 kalın eserle başla";
+        }
+        function kartSecimleriBoya() {
+            document.querySelectorAll("#kartAyar [data-grup]").forEach(g => g.querySelectorAll("button").forEach(b => b.classList.toggle("secili", kartAyar[g.dataset.grup] === b.dataset.v)));
+            const ilk = kartAyar.deste === "ilk";
+            document.getElementById("kartYonKutu").classList.toggle("hidden", ilk);
+            document.getElementById("kartAlanKutu").classList.toggle("hidden", ilk);
+            const kartlar = kartTumKartlar();
+            document.getElementById("kartOzet").innerText = `${kartlar.length} kart · öğrenilen ${kartOgrenilen(kartlar)}. Bilemediğin kart birkaç kart sonra tekrar gelir; bildiğin kart o turdan çıkar.`;
+        }
+        document.addEventListener("click", e => {
+            const b = e.target.closest("#kartAyar [data-grup] button"); if (!b) return;
+            kartAyar[b.parentElement.dataset.grup] = b.dataset.v;
+            try { localStorage.setItem(KART_AYAR_KEY, JSON.stringify(kartAyar)); } catch (x) {}
+            kartSecimleriBoya();
+        });
+        function kartEkranGoster(hangi) {
+            ["kartAyar", "kartOyun", "kartBitti"].forEach(id => document.getElementById(id).classList.toggle("hidden", id !== hangi));
+        }
+        function kartAc() {
+            ["homeScreen", "courseDetailScreen", "quizContainer", "resultContainer"].forEach(id => document.getElementById(id).classList.add("hidden"));
+            document.getElementById("kartScreen").classList.remove("hidden");
+            kartAyarGoster();
+            window.scrollTo(0, 0);
+        }
+        function kartAyarGoster() { kartSecimleriBoya(); kartEkranGoster("kartAyar"); }
+        function kartBasla(sadeceBilemediklerim) {
+            const kutu = kartKutular();
+            let kartlar = kartTumKartlar();
+            if (sadeceBilemediklerim === true) kartlar = kartlar.filter(k => kartBilemedi.has(k.id));
+            // önce az bilinenler (kutu küçük), kutu içinde karışık
+            kartKuyruk = karistirDizi(kartlar).sort((x, y) => (kutu[x.id] || 0) - (kutu[y.id] || 0));
+            kartToplam = kartKuyruk.length; kartBildi = 0; kartBilemedi = new Set();
+            if (!kartToplam) { alert("Bu ayarlarla kart yok."); return; }
+            kartEkranGoster("kartOyun");
+            kartGoster();
+        }
+        function kartGoster() {
+            kartSimdi = kartKuyruk[0];
+            if (!kartSimdi) { kartBitir(); return; }
+            kartCevrik = false;
+            const ic = document.getElementById("kartIc");
+            ic.style.transition = "none"; ic.classList.remove("cevrik"); void ic.offsetWidth; ic.style.transition = "";
+            document.getElementById("kartOnUst").innerText = kartSimdi.onUst;
+            document.getElementById("kartOnMetin").innerText = kartSimdi.on;
+            document.getElementById("kartArkaUst").innerText = kartSimdi.arkaUst;
+            document.getElementById("kartArkaMetin").innerHTML = kartSimdi.arka;
+            document.getElementById("kartArkaIpucu").innerText = kartSimdi.ipucu || "";
+            document.getElementById("kartButonlar").classList.add("invisible");
+            document.getElementById("kartSayac").innerText = `Kalan ${kartKuyruk.length} / ${kartToplam}`;
+            document.getElementById("kartSkor").innerText = `✓ ${kartBildi}  ✗ ${kartBilemedi.size}`;
+        }
+        function kartCevir() {
+            if (!kartSimdi) return;
+            kartCevrik = !kartCevrik;
+            document.getElementById("kartIc").classList.toggle("cevrik", kartCevrik);
+            if (kartCevrik) document.getElementById("kartButonlar").classList.remove("invisible");
+        }
+        function kartCevap(bildi) {
+            if (!kartSimdi || !kartCevrik) return;
+            const kutu = kartKutular();
+            const k = kartKuyruk.shift();
+            if (bildi) { kutu[k.id] = Math.min((kutu[k.id] || 0) + 1, 5); kartBildi++; }
+            else { kutu[k.id] = 0; kartBilemedi.add(k.id); kartKuyruk.splice(Math.min(3, kartKuyruk.length), 0, k); }
+            kartKutuYaz(kutu);
+            kartGoster();
+        }
+        function kartBitir() {
+            kartEkranGoster("kartBitti");
+            document.getElementById("kartBittiOzet").innerText = kartBilemedi.size ? `${kartToplam} kartın ${kartBilemedi.size} tanesinde en az bir kez zorlandın.` : `${kartToplam} kartın hepsini ilk seferde bildin!`;
+            document.getElementById("kartTekrarBtn").classList.toggle("hidden", !kartBilemedi.size);
+        }
+        function kartSifirla() {
+            if (!confirm("Bu destedeki kartların ilerlemesi sıfırlansın mı?")) return;
+            const kutu = kartKutular();
+            kartDeste("ey").concat(kartDeste("ye")).forEach(k => delete kutu[k.id]);
+            kartKutuYaz(kutu); kartSecimleriBoya();
+        }
         function goHome() {
             initHome();
         }
